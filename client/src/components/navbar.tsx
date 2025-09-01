@@ -19,6 +19,12 @@ export default function Navbar() {
     { href: "#contact", label: "Contact" },
   ];
 
+  const dashboardItems = [
+    { href: "/claim-form", label: "Submit Claim" },
+    { href: "/admin", label: "Admin Dashboard" },
+    { href: "/community", label: "Community Dashboard" },
+  ];
+
   const handleNavClick = (href: string) => {
     const element = document.querySelector(href);
     if (element) {
@@ -55,12 +61,12 @@ export default function Navbar() {
           </motion.div>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item, index) => (
               <motion.button
                 key={item.href}
                 onClick={() => handleNavClick(item.href)}
-                className="text-foreground hover:text-primary transition-colors duration-300"
+                className="text-foreground hover:text-primary transition-colors duration-300 text-sm"
                 whileHover={{ y: -2 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -69,6 +75,21 @@ export default function Navbar() {
               >
                 {item.label}
               </motion.button>
+            ))}
+            <div className="h-4 w-px bg-border mx-2" />
+            {dashboardItems.map((item, index) => (
+              <motion.a
+                key={item.href}
+                href={item.href}
+                className="text-foreground hover:text-primary transition-colors duration-300 text-sm font-medium"
+                whileHover={{ y: -2 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: (navItems.length + index) * 0.1 + 0.3 }}
+                data-testid={`dashboard-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                {item.label}
+              </motion.a>
             ))}
           </div>
           

@@ -82,17 +82,31 @@ export default function Hero() {
           AI-powered WebGIS Decision Support System for transparent, real-time monitoring of Forest Rights Act implementation across tribal communities.
         </motion.p>
         
-        <motion.button
-          onClick={handleExploreClick}
-          className="ripple bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-glow"
-          variants={itemVariants}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          data-testid="explore-dashboard-button"
-        >
-          <i className="fas fa-chart-line mr-2" />
-          Explore Dashboard
-        </motion.button>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.button
+            onClick={handleExploreClick}
+            className="ripple bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-glow"
+            variants={itemVariants}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            data-testid="explore-dashboard-button"
+          >
+            <i className="fas fa-chart-line mr-2" />
+            Explore Dashboard
+          </motion.button>
+          
+          <motion.a
+            href="/claim-form"
+            className="ripple bg-secondary hover:bg-secondary/90 text-secondary-foreground px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
+            variants={itemVariants}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            data-testid="submit-claim-button"
+          >
+            <i className="fas fa-file-alt mr-2" />
+            Submit FRA Claim
+          </motion.a>
+        </div>
       </motion.div>
     </section>
   );
