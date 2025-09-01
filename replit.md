@@ -1,8 +1,8 @@
-# FRA Atlas - AI Powered Forest Resource Assessment Dashboard
+# FRA ACT - AI Powered Forest Resource Assessment Dashboard
 
 ## Overview
 
-FRA Atlas is a modern single-page web application designed for forest resource assessment and monitoring. Built as a hackathon demo project, it serves as an AI-powered dashboard that provides comprehensive forest management tools including data analytics, GIS mapping, AI integration, and real-time alert systems. The application features an earthy forest-inspired design with smooth animations and professional presentation suitable for environmental stakeholders.
+FRA ACT is a modern single-page web application designed for forest resource assessment and monitoring. Built as a hackathon demo project, it serves as an AI-powered dashboard that provides comprehensive forest management tools including data analytics, GIS mapping, AI integration, and real-time alert systems. The application features an earthy forest-inspired design with smooth animations and professional presentation suitable for environmental stakeholders.
 
 ## User Preferences
 

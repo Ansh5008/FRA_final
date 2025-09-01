@@ -18,7 +18,7 @@ export default function Prototype() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Live Prototype</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Experience the power of FRA Atlas with our interactive dashboard demonstration
+            Experience the power of FRA ACT with our interactive dashboard demonstration
           </p>
         </motion.div>
         
@@ -35,7 +35,7 @@ export default function Prototype() {
             <div className="w-3 h-3 bg-yellow-500 rounded-full" />
             <div className="w-3 h-3 bg-green-500 rounded-full" />
             <div className="flex-1 text-center">
-              <span className="text-sm text-muted-foreground font-mono">dashboard.fra-atlas.com</span>
+              <span className="text-sm text-muted-foreground font-mono">dashboard.fra-act.com</span>
             </div>
           </div>
           

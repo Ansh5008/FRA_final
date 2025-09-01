@@ -66,7 +66,7 @@ export default function Contact() {
   ];
 
   const contactInfo = [
-    { icon: "fas fa-envelope", label: "Email", value: "contact@fra-atlas.com" },
+    { icon: "fas fa-envelope", label: "Email", value: "contact@fra-act.com" },
     { icon: "fas fa-phone", label: "Phone", value: "+1 (555) 123-4567" },
     { icon: "fas fa-map-marker-alt", label: "Address", value: "Washington, DC" }
   ];
@@ -111,7 +111,7 @@ export default function Contact() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Get In Touch</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Ready to revolutionize forest resource management? Let's discuss how FRA Atlas can transform your operations.
+            Ready to revolutionize forest resource management? Let's discuss how FRA ACT can transform your operations.
           </p>
         </motion.div>
         

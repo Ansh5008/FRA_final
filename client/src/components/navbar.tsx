@@ -51,7 +51,7 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
           >
             <i className="fas fa-globe-americas text-primary text-2xl" />
-            <span className="font-heading font-bold text-xl text-foreground">FRA Atlas</span>
+            <span className="font-heading font-bold text-xl text-foreground">FRA ACT</span>
           </motion.div>
           
           {/* Desktop Navigation */}

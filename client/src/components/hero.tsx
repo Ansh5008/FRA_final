@@ -65,7 +65,7 @@ export default function Hero() {
           className="font-heading font-bold text-4xl md:text-6xl lg:text-7xl text-foreground mb-6"
           variants={itemVariants}
         >
-          FRA Atlas
+          FRA ACT
         </motion.h1>
         
         <motion.h2 
