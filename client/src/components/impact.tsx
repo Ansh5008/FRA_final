@@ -3,32 +3,32 @@ import { useCounter } from "@/hooks/use-counter";
 
 export default function Impact() {
   const stats = [
-    { icon: "fas fa-map", target: 4, label: "States Covered" },
-    { icon: "fas fa-database", target: 15, label: "Data Sources" },
-    { icon: "fas fa-clock", target: 75, label: "% Time Saved" },
-    { icon: "fas fa-users", target: 500, label: "Users Reached" }
+    { icon: "fas fa-map", target: 4, label: "States Piloted" },
+    { icon: "fas fa-file-alt", target: 25000, label: "Claims Tracked" },
+    { icon: "fas fa-clock", target: 80, label: "% Faster Processing" },
+    { icon: "fas fa-users", target: 150000, label: "Beneficiaries Served" }
   ];
 
   const benefits = [
     {
-      icon: "fas fa-leaf",
-      title: "Environmental Protection",
-      description: "Enhanced monitoring leads to better conservation outcomes and sustainable practices."
+      icon: "fas fa-balance-scale",
+      title: "Transparent Governance",
+      description: "Real-time monitoring ensures accountability and reduces corruption in FRA implementation."
     },
     {
-      icon: "fas fa-dollar-sign",
-      title: "Cost Efficiency",
-      description: "Automated processes reduce operational costs by 60% while improving accuracy."
+      icon: "fas fa-users-cog",
+      title: "Empowered Communities",
+      description: "Tribal families get instant updates on claim status through multiple communication channels."
     },
     {
-      icon: "fas fa-handshake",
-      title: "Stakeholder Alignment",
-      description: "Unified platform brings together government, NGOs, and private sector."
+      icon: "fas fa-tachometer-alt",
+      title: "Faster Processing",
+      description: "AI-powered automation reduces claim processing time from months to weeks."
     },
     {
-      icon: "fas fa-shield-alt",
-      title: "Risk Management",
-      description: "Early warning systems prevent forest fires and identify threats proactively."
+      icon: "fas fa-expand-arrows-alt",
+      title: "Scalable Solution",
+      description: "Framework can extend beyond FRA to other land rights and welfare schemes nationwide."
     }
   ];
 
@@ -63,7 +63,7 @@ export default function Impact() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Project Impact</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Measurable results and transformative benefits for forest resource management
+            Demonstrable impact in improving FRA implementation transparency and tribal community empowerment
           </p>
         </motion.div>
         

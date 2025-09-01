@@ -2,7 +2,7 @@
 
 ## Overview
 
-FRA ACT is a modern single-page web application designed for forest resource assessment and monitoring. Built as a hackathon demo project, it serves as an AI-powered dashboard that provides comprehensive forest management tools including data analytics, GIS mapping, AI integration, and real-time alert systems. The application features an earthy forest-inspired design with smooth animations and professional presentation suitable for environmental stakeholders.
+FRA ACT is an AI-powered WebGIS Decision Support System designed for transparent, real-time monitoring of Forest Rights Act implementation. Built as a hackathon demo project, it addresses fragmented FRA implementation across tribal communities in states like Madhya Pradesh, Tripura, Odisha, and Telangana. The system features real-time claim monitoring, AI-based anomaly detection, interactive GIS dashboards, smart alerts, and beneficiary transparency tools. The application maintains an earthy forest-inspired design with smooth animations and professional presentation suitable for government officials, tribal communities, and policy stakeholders.
 
 ## User Preferences
 

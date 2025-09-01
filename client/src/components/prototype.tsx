@@ -18,7 +18,7 @@ export default function Prototype() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Live Prototype</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Experience the power of FRA ACT with our interactive dashboard demonstration
+            Experience the AI-powered WebGIS Decision Support System for transparent FRA monitoring
           </p>
         </motion.div>
         

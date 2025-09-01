@@ -79,7 +79,7 @@ export default function Hero() {
           className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
-          Revolutionizing forestry data management with intelligent insights and real-time analytics for sustainable forest resource assessment.
+          AI-powered WebGIS Decision Support System for transparent, real-time monitoring of Forest Rights Act implementation across tribal communities.
         </motion.p>
         
         <motion.button

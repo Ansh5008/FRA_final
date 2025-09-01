@@ -111,7 +111,7 @@ export default function Contact() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Get In Touch</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Ready to revolutionize forest resource management? Let's discuss how FRA ACT can transform your operations.
+            Ready to transform FRA implementation with AI and transparency? Let's discuss how FRA ACT can empower tribal communities and improve governance.
           </p>
         </motion.div>
         
@@ -183,7 +183,7 @@ export default function Contact() {
                 <Textarea
                   id="message"
                   rows={5}
-                  placeholder="Tell us about your forest management needs"
+                  placeholder="Tell us about your FRA implementation challenges and community needs"
                   className="w-full resize-none"
                   {...form.register("message")}
                   data-testid="textarea-message"

@@ -4,27 +4,27 @@ export default function Features() {
   const features = [
     {
       icon: "fas fa-chart-bar",
-      title: "Data Analytics",
-      subtitle: "Advanced reporting",
-      description: "Comprehensive data visualization and reporting tools that transform raw forest data into actionable insights for better decision-making."
+      title: "Real-Time Monitoring",
+      subtitle: "Live claim tracking",
+      description: "Monitor FRA claims and approvals in real-time with comprehensive dashboards showing progress from village to state level."
     },
     {
       icon: "fas fa-robot",
-      title: "AI Integration",
-      subtitle: "Smart automation",
-      description: "Machine learning algorithms automatically process satellite imagery and sensor data to detect patterns and predict forest health trends."
+      title: "AI Anomaly Detection",
+      subtitle: "Smart fraud prevention",
+      description: "Advanced AI algorithms detect duplicate, fraudulent, or delayed claims, ensuring transparent and efficient FRA implementation."
     },
     {
       icon: "fas fa-map-marked-alt",
-      title: "GIS Mapping",
-      subtitle: "Interactive maps",
-      description: "Interactive geographical information systems with real-time overlays showing forest coverage, fire risks, and resource distribution."
+      title: "WebGIS Dashboards",
+      subtitle: "Interactive mapping",
+      description: "Interactive GIS visualization with layered mapping from village to district to state level, showing claim boundaries and disputes."
     },
     {
       icon: "fas fa-bell",
-      title: "Alert System",
-      subtitle: "Real-time notifications",
-      description: "Intelligent alert system that notifies stakeholders of critical changes in forest conditions, policy updates, and resource availability."
+      title: "Smart Alert System",
+      subtitle: "Proactive notifications",
+      description: "Intelligent alerts for anomalies, disputes, unusual delays, and automated notifications to beneficiaries via multiple channels."
     }
   ];
 
@@ -59,7 +59,7 @@ export default function Features() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Key Features</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive tools designed to transform forest resource management through intelligent automation
+            AI-powered tools designed to revolutionize Forest Rights Act implementation with transparency and intelligence
           </p>
         </motion.div>
         

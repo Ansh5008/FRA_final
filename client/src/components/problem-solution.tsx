@@ -60,10 +60,10 @@ export default function ProblemSolution() {
                   whileHover={{ x: 4 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <i className="fas fa-chart-line-down text-destructive text-xl mt-1" />
+                  <i className="fas fa-file-alt text-destructive text-xl mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Fragmented Data Sources</h3>
-                    <p className="text-muted-foreground">Forest resource data scattered across multiple agencies with no unified view.</p>
+                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Scattered Claims & Maps</h3>
+                    <p className="text-muted-foreground">FRA claims and land records distributed across departments with no unified tracking system.</p>
                   </div>
                 </motion.div>
                 
@@ -74,8 +74,8 @@ export default function ProblemSolution() {
                 >
                   <i className="fas fa-clock text-destructive text-xl mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Manual Reporting</h3>
-                    <p className="text-muted-foreground">Time-consuming manual processes lead to delays in critical decision-making.</p>
+                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Manual Processing Delays</h3>
+                    <p className="text-muted-foreground">Paper-based tracking leads to delays, disputes, and duplication in claim processing.</p>
                   </div>
                 </motion.div>
                 
@@ -84,10 +84,10 @@ export default function ProblemSolution() {
                   whileHover={{ x: 4 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <i className="fas fa-eye-slash text-destructive text-xl mt-1" />
+                  <i className="fas fa-question-circle text-destructive text-xl mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Limited Visibility</h3>
-                    <p className="text-muted-foreground">Lack of real-time insights into forest health and resource allocation.</p>
+                    <h3 className="font-semibold text-lg text-card-foreground mb-2">No Transparency</h3>
+                    <p className="text-muted-foreground">Tribal families remain uncertain about their claim status with no real-time monitoring.</p>
                   </div>
                 </motion.div>
               </div>
@@ -115,10 +115,10 @@ export default function ProblemSolution() {
                   whileHover={{ x: 4 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <i className="fas fa-brain text-primary text-xl mt-1" />
+                  <i className="fas fa-robot text-primary text-xl mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg text-card-foreground mb-2">AI-Powered Integration</h3>
-                    <p className="text-muted-foreground">Intelligent data aggregation from multiple sources with automated processing.</p>
+                    <h3 className="font-semibold text-lg text-card-foreground mb-2">AI Anomaly Detection</h3>
+                    <p className="text-muted-foreground">Intelligent detection of duplicate, fraudulent, or delayed claims with automated alerts.</p>
                   </div>
                 </motion.div>
                 
@@ -127,10 +127,10 @@ export default function ProblemSolution() {
                   whileHover={{ x: 4 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <i className="fas fa-tachometer-alt text-primary text-xl mt-1" />
+                  <i className="fas fa-map-marked-alt text-primary text-xl mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Real-Time Dashboard</h3>
-                    <p className="text-muted-foreground">Live updates and interactive visualizations for immediate insights.</p>
+                    <h3 className="font-semibold text-lg text-card-foreground mb-2">WebGIS Decision Support</h3>
+                    <p className="text-muted-foreground">Interactive GIS dashboards with village to state level visualization and monitoring.</p>
                   </div>
                 </motion.div>
                 
@@ -139,10 +139,10 @@ export default function ProblemSolution() {
                   whileHover={{ x: 4 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <i className="fas fa-chart-area text-primary text-xl mt-1" />
+                  <i className="fas fa-users text-primary text-xl mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Predictive Analytics</h3>
-                    <p className="text-muted-foreground">Machine learning algorithms predict trends and optimize resource allocation.</p>
+                    <h3 className="font-semibold text-lg text-card-foreground mb-2">Beneficiary Transparency</h3>
+                    <p className="text-muted-foreground">Real-time updates via SMS, notice boards, and Gram Sabha meetings for tribal communities.</p>
                   </div>
                 </motion.div>
               </div>
