@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+@import url('https://unpkg.com/aos@2.3.1/dist/aos.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(60, 9%, 98%);
+  --foreground: hsl(120, 6%, 15%);
+  --card: hsl(60, 9%, 99%);
+  --card-foreground: hsl(120, 6%, 15%);
+  --popover: hsl(60, 9%, 99%);
+  --popover-foreground: hsl(120, 6%, 15%);
+  --primary: hsl(90, 35%, 25%);
+  --primary-foreground: hsl(60, 9%, 98%);
+  --secondary: hsl(120, 25%, 65%);
+  --secondary-foreground: hsl(120, 6%, 15%);
+  --muted: hsl(60, 9%, 96%);
+  --muted-foreground: hsl(120, 5%, 45%);
+  --accent: hsl(40, 30%, 85%);
+  --accent-foreground: hsl(120, 6%, 15%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --border: hsl(60, 9%, 89%);
+  --input: hsl(60, 9%, 89%);
+  --ring: hsl(90, 35%, 25%);
+  --sidebar: hsl(60, 9%, 99%);
+  --sidebar-foreground: hsl(120, 6%, 15%);
+  --sidebar-primary: hsl(90, 35%, 25%);
+  --sidebar-primary-foreground: hsl(60, 9%, 98%);
+  --sidebar-accent: hsl(40, 30%, 85%);
+  --sidebar-accent-foreground: hsl(120, 6%, 15%);
+  --sidebar-border: hsl(60, 9%, 89%);
+  --sidebar-ring: hsl(90, 35%, 25%);
+  --font-sans: Inter, ui-sans-serif, system-ui;
+  --font-heading: "Space Grotesk", ui-sans-serif, system-ui;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.75rem;
+  --chart-1: hsl(90, 35%, 25%);
+  --chart-2: hsl(120, 25%, 65%);
+  --chart-3: hsl(40, 30%, 85%);
+  --chart-4: hsl(60, 9%, 89%);
+  --chart-5: hsl(0, 62%, 30%);
+}
+
+.dark {
+  --background: hsl(120, 6%, 8%);
+  --foreground: hsl(60, 9%, 95%);
+  --card: hsl(120, 6%, 10%);
+  --card-foreground: hsl(60, 9%, 95%);
+  --popover: hsl(120, 6%, 10%);
+  --popover-foreground: hsl(60, 9%, 95%);
+  --primary: hsl(90, 35%, 35%);
+  --primary-foreground: hsl(60, 9%, 98%);
+  --secondary: hsl(120, 25%, 45%);
+  --secondary-foreground: hsl(60, 9%, 95%);
+  --muted: hsl(120, 6%, 12%);
+  --muted-foreground: hsl(120, 5%, 55%);
+  --accent: hsl(40, 30%, 25%);
+  --accent-foreground: hsl(60, 9%, 95%);
+  --destructive: hsl(0, 62%, 40%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --border: hsl(120, 6%, 18%);
+  --input: hsl(120, 6%, 18%);
+  --ring: hsl(90, 35%, 35%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .forest-gradient {
+    background: linear-gradient(135deg, hsl(90, 35%, 25%) 0%, hsl(120, 25%, 65%) 100%);
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(60, 9%, 98%) 0%, hsl(40, 30%, 85%) 50%, hsl(120, 25%, 85%) 100%);
+  }
+
+  .navbar-scrolled {
+    background: rgba(45, 80, 22, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-card {
+    perspective: 1000px;
+  }
+  
+  .feature-card-inner {
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  
+  .feature-card:hover .feature-card-inner {
+    transform: rotateY(180deg);
+  }
+  
+  .feature-card-front, .feature-card-back {
+    backface-visibility: hidden;
+  }
+  
+  .feature-card-back {
+    transform: rotateY(180deg);
+  }
+
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ripple:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+  }
+  
+  .ripple:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px rgba(45, 80, 22, 0.3); }
+  to { box-shadow: 0 0 30px rgba(45, 80, 22, 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.8s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.8s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s ease-out;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.counter {
+  transition: all 2s ease;
+}
