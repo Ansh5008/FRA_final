@@ -1,0 +1,102 @@
+🌍 Advanced FRA Atlas Website Prompt (With Cool Animations)
+
+"Build a fully responsive, modern single-page website for the project FRA Atlas – AI Powered Dashboard. The website must look professional and visually impressive for a hackathon demo. It should have a fixed navbar and plenty of smooth, elegant animations throughout."
+
+🎨 Design & Theme
+
+Earthy forest-inspired color palette (green gradients, beige backgrounds, soft browns).
+
+Use Google Fonts (Montserrat / Poppins).
+
+Light background, green highlights, subtle shadows.
+
+Animations should be everywhere, but subtle and professional:
+
+Smooth fade-ins
+
+Slide-in from left/right
+
+Hover glow effects
+
+Button hover ripple or scale
+
+Scroll reveal animations
+
+Animated counters in stats section
+
+📑 Sections
+1. Navbar (fixed)
+
+Transparent on top → solid green on scroll.
+
+Links: Home | Problem | Solution | Features | Prototype | Impact | Contact.
+
+Smooth scroll + highlight active section.
+
+Navbar fades/slides in on page load.
+
+2. Hero Section
+
+Large animated title: 🌍 FRA Atlas – AI Powered Dashboard
+
+Subtitle fades in after a delay.
+
+Background: animated gradient or subtle moving forest silhouette.
+
+CTA button (“Explore Dashboard”) should have a glowing hover effect and bounce in.
+
+3. Problem & Solution
+
+Two-column layout.
+
+Problem (slide-in from left).
+
+Solution (slide-in from right).
+
+Use icons that pulse or fade when visible.
+
+4. Features
+
+Four interactive cards with hover animations:
+
+Flip effect on hover.
+
+Subtle scale-up.
+
+Icon bounce/glow when hovered.
+
+Icons: 📊 🤖 🗺️ 🔔.
+
+5. Prototype
+
+Section title fades down.
+
+Embed iframe placeholder with a subtle zoom-in animation.
+
+Button: “View Live Dashboard” with hover ripple effect.
+
+6. Impact
+
+Four benefit boxes appear with staggered delay animations (one after another).
+
+Icons rotate slightly or pop-in.
+
+Counters (e.g., “4 States Covered”) animate from 0 → target value.
+
+7. Contact
+
+Contact form fields slide in sequentially.
+
+Submit button has hover glow + click animation.
+
+Social icons with hover spin/scale effects.
+
+🛠️ Tech Stack
+
+HTML5, CSS3, JavaScript only.
+
+Use CSS transitions, keyframes, AOS (Animate On Scroll), GSAP (optional) for animations.
+
+Use Font Awesome / Lucide icons.
+
+Must be responsive (mobile-first).
