@@ -4,7 +4,7 @@ import Navbar from "@/components/navbar";
 import Hero from "@/components/hero";
 import ProblemSolution from "@/components/problem-solution";
 import Features from "@/components/features";
-import Prototype from "@/components/prototype";
+import CommunitySection from "@/components/community-section";
 import Impact from "@/components/impact";
 import Contact from "@/components/contact";
 import Footer from "@/components/footer";
@@ -30,7 +30,7 @@ export default function Home() {
       <Hero />
       <ProblemSolution />
       <Features />
-      <Prototype />
+      <CommunitySection />
       <Impact />
       <Contact />
       <Footer />

@@ -14,7 +14,7 @@ export default function Navbar() {
     { href: "#problem", label: "Problem" },
     { href: "#solution", label: "Solution" },
     { href: "#features", label: "Features" },
-    { href: "#prototype", label: "Prototype" },
+    { href: "#community", label: "Community" },
     { href: "#impact", label: "Impact" },
     { href: "#contact", label: "Contact" },
   ];
@@ -52,12 +52,33 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <motion.div 
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-3"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <i className="fas fa-globe-americas text-primary text-2xl" />
-            <span className="font-heading font-bold text-xl text-foreground">FRA ACT</span>
+            <div className="relative">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-lg"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 0.8, 0.5] 
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut" 
+                }}
+              />
+              <motion.i 
+                className="fas fa-globe-americas text-primary text-2xl relative z-10" 
+                animate={{ rotateY: [0, 360] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-heading font-bold text-xl text-foreground">FRA ACT</span>
+              <span className="text-xs text-primary font-medium tracking-wide">by Vantrix</span>
+            </div>
           </motion.div>
           
           {/* Desktop Navigation */}

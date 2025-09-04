@@ -59,16 +59,16 @@ export default function Contact() {
   };
 
   const socialLinks = [
-    { icon: "fab fa-github", href: "#", label: "GitHub" },
-    { icon: "fab fa-linkedin", href: "#", label: "LinkedIn" },
-    { icon: "fab fa-twitter", href: "#", label: "Twitter" },
-    { icon: "fas fa-globe", href: "#", label: "Website" }
+    { icon: "fab fa-github", href: "https://github.com/vantrix", label: "GitHub" },
+    { icon: "fab fa-linkedin", href: "https://linkedin.com/company/vantrix", label: "LinkedIn" },
+    { icon: "fab fa-twitter", href: "https://twitter.com/vantrixtech", label: "Twitter" },
+    { icon: "fas fa-globe", href: "https://vantrix.tech", label: "Website" }
   ];
 
   const contactInfo = [
-    { icon: "fas fa-envelope", label: "Email", value: "contact@fra-act.com" },
-    { icon: "fas fa-phone", label: "Phone", value: "+1 (555) 123-4567" },
-    { icon: "fas fa-map-marker-alt", label: "Address", value: "Washington, DC" }
+    { icon: "fas fa-envelope", label: "Email", value: "team@vantrix.tech" },
+    { icon: "fas fa-phone", label: "Phone", value: "+91 98765 43210" },
+    { icon: "fas fa-map-marker-alt", label: "Address", value: "Bengaluru, India" }
   ];
 
   const containerVariants = {
@@ -111,7 +111,7 @@ export default function Contact() {
         >
           <h2 className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6">Get In Touch</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Ready to transform FRA implementation with AI and transparency? Let's discuss how FRA ACT can empower tribal communities and improve governance.
+            Ready to transform FRA implementation with AI and transparency? Contact Team Vantrix to discuss how FRA ACT can empower tribal communities and improve governance.
           </p>
         </motion.div>
         
