@@ -59,7 +59,7 @@ export default function Contact() {
   };
 
   const socialLinks = [
-    { icon: "fab fa-github", href: "https://github.com/vantrix", label: "GitHub" },
+    { icon: "fab fa-github", href: "https://github.com/Ansh5008/FRA_final", label: "GitHub" },
     { icon: "fab fa-linkedin", href: "https://linkedin.com/company/vantrix", label: "LinkedIn" },
     { icon: "fab fa-twitter", href: "https://twitter.com/vantrixtech", label: "Twitter" },
     { icon: "fas fa-globe", href: "https://vantrix.tech", label: "Website" }
