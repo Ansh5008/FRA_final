@@ -22,14 +22,7 @@ export default function Hero() {
   };
 
   const handleExploreClick = () => {
-    const featuresSection = document.querySelector('#features');
-    if (featuresSection) {
-      const offsetTop = featuresSection.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: 'smooth'
-      });
-    }
+    window.location.href = '/community';
   };
 
   return (

@@ -5,7 +5,6 @@ import Hero from "@/components/hero";
 import ProblemSolution from "@/components/problem-solution";
 import Features from "@/components/features";
 import CommunitySection from "@/components/community-section";
-import Impact from "@/components/impact";
 import Contact from "@/components/contact";
 import Footer from "@/components/footer";
 
@@ -31,7 +30,6 @@ export default function Home() {
       <ProblemSolution />
       <Features />
       <CommunitySection />
-      <Impact />
       <Contact />
       <Footer />
     </div>

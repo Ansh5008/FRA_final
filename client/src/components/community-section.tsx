@@ -185,7 +185,7 @@ export default function CommunitySection() {
             </Card>
           </motion.div>
 
-          {/* Community Insights */}
+          {/* FRA Workflow UML Diagram */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -196,45 +196,116 @@ export default function CommunitySection() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-primary" />
-                  Community Insights
+                  FRA Processing Workflow
                 </CardTitle>
                 <CardDescription>
-                  Key metrics and transparency data for stakeholders
+                  Complete claim processing flow from submission to approval
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 rounded-lg border border-border bg-card">
-                    <h4 className="font-medium text-foreground mb-2">Processing Efficiency</h4>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-2">
-                        <div className="bg-primary h-2 rounded-full w-3/4"></div>
-                      </div>
-                      <span className="text-sm text-muted-foreground">75%</span>
+                <div className="relative bg-gradient-to-br from-blue-50 to-green-50 p-6 rounded-lg">
+                  {/* UML Workflow Diagram */}
+                  <div className="space-y-4">
+                    {/* Start Node */}
+                    <div className="flex justify-center">
+                      <div className="w-4 h-4 bg-green-500 rounded-full shadow-lg"></div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Average claim processing time: 45 days
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 rounded-lg border border-border bg-card">
-                    <h4 className="font-medium text-foreground mb-2">Community Engagement</h4>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full w-4/5"></div>
-                      </div>
-                      <span className="text-sm text-muted-foreground">82%</span>
+                    
+                    {/* Claim Submission */}
+                    <div className="flex items-center gap-4">
+                      <div className="w-1 h-8 bg-gray-300 mx-auto"></div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Active participation in verification process
-                    </p>
+                    <motion.div 
+                      className="bg-blue-100 p-3 rounded-lg border-l-4 border-blue-500 shadow-sm"
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium text-sm">Claim Submission</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">Community submits FRA claim with documents</p>
+                    </motion.div>
+
+                    {/* Arrow */}
+                    <div className="flex justify-center">
+                      <div className="w-1 h-6 bg-gray-300"></div>
+                    </div>
+
+                    {/* AI Verification */}
+                    <motion.div 
+                      className="bg-purple-100 p-3 rounded-lg border-l-4 border-purple-500 shadow-sm"
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-purple-600" />
+                        <span className="font-medium text-sm">AI Document Verification</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">Automated document validation & anomaly detection</p>
+                    </motion.div>
+
+                    {/* Arrow */}
+                    <div className="flex justify-center">
+                      <div className="w-1 h-6 bg-gray-300"></div>
+                    </div>
+
+                    {/* Field Verification */}
+                    <motion.div 
+                      className="bg-yellow-100 p-3 rounded-lg border-l-4 border-yellow-500 shadow-sm"
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-yellow-600" />
+                        <span className="font-medium text-sm">Field Verification</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">GPS verification & community validation</p>
+                    </motion.div>
+
+                    {/* Arrow */}
+                    <div className="flex justify-center">
+                      <div className="w-1 h-6 bg-gray-300"></div>
+                    </div>
+
+                    {/* Decision Diamond */}
+                    <div className="flex justify-center">
+                      <motion.div 
+                        className="w-12 h-12 bg-orange-200 border-2 border-orange-500 transform rotate-45 flex items-center justify-center"
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        <span className="transform -rotate-45 text-xs font-bold text-orange-700">?</span>
+                      </motion.div>
+                    </div>
+
+                    {/* Final States */}
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <motion.div 
+                        className="bg-green-100 p-2 rounded-lg border-l-4 border-green-500 shadow-sm"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className="flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3 text-green-600" />
+                          <span className="font-medium text-xs">Approved</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Rights granted</p>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="bg-red-100 p-2 rounded-lg border-l-4 border-red-500 shadow-sm"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className="flex items-center gap-1">
+                          <XCircle className="w-3 h-3 text-red-600" />
+                          <span className="font-medium text-xs">Rejected</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Need revision</p>
+                      </motion.div>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="mt-6 pt-4 border-t border-border">
-                  <Button className="w-full" variant="outline">
+
+                <div className="mt-4 text-center">
+                  <Button className="w-full" variant="outline" size="sm">
                     <Eye className="w-4 h-4 mr-2" />
-                    View Full Community Dashboard
+                    View Full Process Flow
                   </Button>
                 </div>
               </CardContent>
