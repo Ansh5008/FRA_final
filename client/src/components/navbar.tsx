@@ -15,7 +15,6 @@ export default function Navbar() {
     { href: "#solution", label: "Solution" },
     { href: "#features", label: "Features" },
     { href: "#community", label: "Community" },
-    { href: "#impact", label: "Impact" },
     { href: "#contact", label: "Contact" },
   ];
 
