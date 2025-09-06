@@ -37,7 +37,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     this.users.set(id, user);
     return user;
   }
@@ -85,10 +90,10 @@ export class MemStorage implements IStorage {
     return this.fraClaims.get(id);
   }
 
-  async updateFraClaimStatus(id: string, status: string): Promise<FraClaim | undefined> {
+  async updateFraClaimStatus(id: string, status: "pending" | "approved" | "rejected"): Promise<FraClaim | undefined> {
     const claim = this.fraClaims.get(id);
     if (claim) {
-      claim.status = status;
+      claim.status = status as "pending" | "approved" | "rejected";
       claim.updatedAt = new Date();
       this.fraClaims.set(id, claim);
       return claim;
@@ -104,33 +109,33 @@ export class MemStorage implements IStorage {
         village: "Bansjore",
         district: "Ranchi",
         state: "Jharkhand",
-        claimType: "Individual Forest Right",
+        claimType: "Individual Forest Right" as const,
         landArea: "2 acres",
         documents: ["Aadhaar card", "land sketch", "Gram Sabha resolution"],
         coordinates: "23.3441,85.3096",
-        status: "approved"
+        status: "approved" as const
       },
       {
         beneficiaryName: "Sita Munda",
         village: "Khunti",
         district: "Khunti",
         state: "Jharkhand",
-        claimType: "Community Forest Right",
+        claimType: "Community Forest Right" as const,
         landArea: "15 acres",
         documents: ["Community certificate", "village map", "Gram Sabha resolution"],
         coordinates: "23.0722,85.2789",
-        status: "pending"
+        status: "pending" as const
       },
       {
         beneficiaryName: "Kiran Tirkey",
         village: "Gumla",
         district: "Gumla",
         state: "Jharkhand",
-        claimType: "Individual Forest Right",
+        claimType: "Individual Forest Right" as const,
         landArea: "1.5 acres",
         documents: ["Aadhaar card", "village certificate"],
         coordinates: "23.0441,84.5391",
-        status: "rejected"
+        status: "rejected" as const
       }
     ];
 
