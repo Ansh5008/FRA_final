@@ -74,15 +74,15 @@ export function generateFRAId(): string {
 
 export async function generateQRCode(fraId: string): Promise<string> {
   try {
-    const qrCodeData = {
-      fraId,
-      generatedAt: new Date().toISOString(),
-      type: 'FRA_CLAIM',
-      version: '1.0'
-    };
+    // Get the domain from environment variables, fallback to localhost for development
+    const domain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS || 'localhost:5000';
+    const protocol = domain.includes('replit.dev') ? 'https' : 'http';
     
-    // Generate QR code as base64 data URL
-    const qrCodeString = await QRCode.toDataURL(JSON.stringify(qrCodeData), {
+    // Create URL that redirects to community dashboard with fraId parameter
+    const redirectUrl = `${protocol}://${domain}/community-dashboard?fraId=${fraId}`;
+    
+    // Generate QR code that contains the redirect URL
+    const qrCodeString = await QRCode.toDataURL(redirectUrl, {
       width: 256,
       margin: 2,
       color: {

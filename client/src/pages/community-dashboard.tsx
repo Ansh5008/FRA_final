@@ -14,7 +14,8 @@ import {
   ArrowLeft,
   RefreshCw,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  X
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -37,6 +38,18 @@ interface FraClaim {
 export default function CommunityDashboard() {
   const [selectedVillage, setSelectedVillage] = useState("Bansjore");
   const [lastSynced, setLastSynced] = useState(new Date());
+  const [highlightedFraId, setHighlightedFraId] = useState<string | null>(null);
+
+  // Check for fraId in URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fraIdFromUrl = urlParams.get('fraId');
+    if (fraIdFromUrl) {
+      setHighlightedFraId(fraIdFromUrl);
+      // Auto-select the village that contains this claim
+      // We'll do this after the claims are loaded
+    }
+  }, []);
 
   const { data: claimsData, isLoading, refetch } = useQuery({
     queryKey: ['/api/claims'],
@@ -49,6 +62,16 @@ export default function CommunityDashboard() {
   });
 
   const claims: FraClaim[] = claimsData?.data || [];
+
+  // Auto-select village when fraId is highlighted
+  useEffect(() => {
+    if (highlightedFraId && claims.length > 0) {
+      const targetClaim = claims.find(claim => claim.fraId === highlightedFraId);
+      if (targetClaim) {
+        setSelectedVillage(targetClaim.village);
+      }
+    }
+  }, [highlightedFraId, claims]);
 
   // Filter claims by selected village
   const villageClaims = claims.filter(claim => 
@@ -120,6 +143,36 @@ export default function CommunityDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
+          {/* QR Code Access Notification */}
+          {highlightedFraId && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6"
+            >
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="text-green-800 dark:text-green-200 font-medium">
+                    QR Code Scan Successful
+                  </p>
+                  <p className="text-green-700 dark:text-green-300 text-sm">
+                    Showing claim with FRA ID: <span className="font-mono">{highlightedFraId}</span>
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setHighlightedFraId(null)}
+                  className="ml-auto"
+                  data-testid="button-clear-highlight"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -262,7 +315,11 @@ export default function CommunityDashboard() {
                       key={claim.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center justify-between p-4 bg-muted/30 rounded-lg"
+                      className={`flex items-center justify-between p-4 rounded-lg ${
+                        claim.fraId === highlightedFraId 
+                          ? 'bg-primary/10 border-2 border-primary shadow-lg' 
+                          : 'bg-muted/30'
+                      }`}
                     >
                       <div className="flex items-center space-x-4 flex-1">
                         {getStatusIcon(claim.status)}
