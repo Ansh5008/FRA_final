@@ -26,7 +26,7 @@ const claimFormSchema = z.object({
   state: z.string().min(2, "State is required"),
   claimType: z.string().min(1, "Please select claim type"),
   landArea: z.string().min(1, "Land area is required"),
-  documents: z.array(z.string()).min(1, "At least one document is required"),
+  documents: z.array(z.string()).optional(),
   uploadedFiles: z.array(z.any()).optional(),
 });
 
@@ -414,7 +414,7 @@ export default function ClaimFormPage() {
                 </div>
 
                 <div>
-                  <Label>Supporting Documents</Label>
+                  <Label>Supporting Documents <span className="text-sm text-muted-foreground">(Optional)</span></Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                     {documentTypes.map((docType) => (
                       <label key={docType} className="flex items-center space-x-2 text-sm">
@@ -444,7 +444,7 @@ export default function ClaimFormPage() {
 
                 {/* File Upload Section */}
                 <div>
-                  <Label>Upload Document Files</Label>
+                  <Label>Upload Document Files <span className="text-sm text-muted-foreground">(Optional)</span></Label>
                   <div className="space-y-4">
                     <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                       <div className="flex flex-col items-center justify-center text-center">
