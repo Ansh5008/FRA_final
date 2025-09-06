@@ -61,7 +61,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = {
         ...parsedData,
         uploadedFiles: parsedData.uploadedFiles?.filter(Boolean) || [],
-        aiFlags: parsedData.aiFlags?.filter(Boolean) || []
+        aiFlags: parsedData.aiFlags?.filter(Boolean) || [],
+        documents: parsedData.documents?.filter(Boolean) || []
       };
       
       const claim = await storage.createFraClaim(validatedData);
