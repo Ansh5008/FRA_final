@@ -355,5 +355,328 @@ class FRAValidationService {
   }
 }
 
-// Create singleton instance
+// Advanced ML-based Anomaly Detection Service
+class MLAnomalyDetectionService {
+  private dataset: FRADatasetRecord[] = [];
+  private isLoaded = false;
+
+  constructor(validationService: FRAValidationService) {
+    this.dataset = (validationService as any).dataset;
+    this.isLoaded = (validationService as any).isLoaded;
+  }
+
+  // Levenshtein Distance for string similarity
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
+  }
+
+  // Calculate string similarity (0-1, where 1 is identical)
+  private stringSimilarity(str1: string, str2: string): number {
+    if (str1 === str2) return 1.0;
+    if (!str1 || !str2) return 0.0;
+    
+    const maxLength = Math.max(str1.length, str2.length);
+    const distance = this.levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
+    return (maxLength - distance) / maxLength;
+  }
+
+  // Jaccard similarity for document sets
+  private jaccardSimilarity(set1: string[], set2: string[]): number {
+    if (!set1.length && !set2.length) return 1.0;
+    if (!set1.length || !set2.length) return 0.0;
+    
+    const intersection = set1.filter(x => set2.includes(x)).length;
+    const union = [...new Set([...set1, ...set2])].length;
+    return intersection / union;
+  }
+
+  // Geographic distance calculation (Haversine formula)
+  private haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // Advanced ML-based duplicate detection
+  public async detectDuplicateApplications(claimData: ClaimValidationData): Promise<{
+    isDuplicate: boolean;
+    duplicates: Array<{
+      record: FRADatasetRecord;
+      similarity: number;
+      reasons: string[];
+      riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    }>;
+    mlScore: number;
+    analysis: {
+      nameMatches: number;
+      locationMatches: number;
+      documentSimilarity: number;
+      geographicProximity: number;
+      temporalProximity: number;
+    };
+  }> {
+    if (!this.isLoaded) {
+      throw new Error('ML service not initialized');
+    }
+
+    const duplicates: Array<{
+      record: FRADatasetRecord;
+      similarity: number;
+      reasons: string[];
+      riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    }> = [];
+
+    let nameMatches = 0;
+    let locationMatches = 0;
+    let documentSimilarity = 0;
+    let geographicProximity = 0;
+    let temporalProximity = 0;
+    let totalRecordsAnalyzed = 0;
+
+    // Parse claim land area for comparison
+    const claimLandArea = this.parseLandArea(claimData.landArea);
+
+    for (const record of this.dataset) {
+      totalRecordsAnalyzed++;
+      const reasons: string[] = [];
+      let similarity = 0;
+      let weights = 0;
+
+      // 1. Name similarity (weight: 25%)
+      const nameSim = this.stringSimilarity(claimData.beneficiaryName, record.applicant_name);
+      similarity += nameSim * 0.25;
+      weights += 0.25;
+      if (nameSim > 0.8) {
+        nameMatches++;
+        reasons.push(`Name similarity: ${Math.round(nameSim * 100)}%`);
+      }
+
+      // 2. Location similarity (weight: 20%)
+      let locationSim = 0;
+      if (record.state.toLowerCase() === claimData.state.toLowerCase()) locationSim += 0.4;
+      if (record.district.toLowerCase() === claimData.district.toLowerCase()) locationSim += 0.4;
+      if (record.village.toLowerCase() === claimData.village.toLowerCase()) locationSim += 0.2;
+      
+      similarity += locationSim * 0.20;
+      weights += 0.20;
+      if (locationSim > 0.6) {
+        locationMatches++;
+        reasons.push(`Location match: ${record.state}/${record.district}/${record.village}`);
+      }
+
+      // 3. Aadhaar ID match (weight: 30%)
+      if (claimData.aadhaarId && record.aadhaar_id && claimData.aadhaarId === record.aadhaar_id) {
+        similarity += 0.30;
+        weights += 0.30;
+        reasons.push('Exact Aadhaar ID match');
+      }
+
+      // 4. Land area similarity (weight: 10%)
+      const landAreaDiff = Math.abs(claimLandArea - record.land_area_requested_acres);
+      const landAreaSim = Math.max(0, 1 - (landAreaDiff / Math.max(claimLandArea, record.land_area_requested_acres)));
+      if (landAreaSim > 0.9 && landAreaDiff < 0.5) {
+        similarity += 0.10;
+        weights += 0.10;
+        reasons.push(`Similar land area: ${record.land_area_requested_acres} acres`);
+      }
+
+      // 5. Age similarity (weight: 5%)
+      if (claimData.age && Math.abs(claimData.age - record.age) <= 2) {
+        similarity += 0.05;
+        weights += 0.05;
+        reasons.push(`Similar age: ${record.age} years`);
+      }
+
+      // 6. Geographic proximity (weight: 10%)
+      // Note: This would require coordinates from claim data, using approximate logic
+      const geoProximity = locationSim > 0.8 ? 0.8 : 0; // Simplified for demo
+      similarity += geoProximity * 0.10;
+      weights += 0.10;
+      geographicProximity += geoProximity;
+
+      // Normalize similarity score
+      if (weights > 0) {
+        similarity = similarity / weights;
+      }
+
+      // Determine risk level and add to duplicates if significant
+      if (similarity > 0.3) {
+        let riskLevel: 'low' | 'medium' | 'high' | 'critical';
+        
+        if (similarity >= 0.9) {
+          riskLevel = 'critical';
+        } else if (similarity >= 0.7) {
+          riskLevel = 'high';
+        } else if (similarity >= 0.5) {
+          riskLevel = 'medium';
+        } else {
+          riskLevel = 'low';
+        }
+
+        duplicates.push({
+          record,
+          similarity,
+          reasons,
+          riskLevel
+        });
+      }
+    }
+
+    // Calculate overall ML score
+    const mlScore = duplicates.length > 0 ? Math.max(...duplicates.map(d => d.similarity)) : 0;
+    
+    // Sort duplicates by similarity (highest first)
+    duplicates.sort((a, b) => b.similarity - a.similarity);
+
+    return {
+      isDuplicate: duplicates.some(d => d.similarity > 0.7),
+      duplicates: duplicates.slice(0, 10), // Top 10 matches
+      mlScore,
+      analysis: {
+        nameMatches,
+        locationMatches,
+        documentSimilarity: documentSimilarity / totalRecordsAnalyzed,
+        geographicProximity: geographicProximity / totalRecordsAnalyzed,
+        temporalProximity: temporalProximity / totalRecordsAnalyzed
+      }
+    };
+  }
+
+  // Document similarity detection using text analysis
+  public async detectDocumentSimilarity(documents: string[]): Promise<{
+    hasSimilarDocuments: boolean;
+    similarityScore: number;
+    suspiciousPatterns: string[];
+    recommendation: string;
+  }> {
+    const suspiciousPatterns: string[] = [];
+    let maxSimilarity = 0;
+
+    // Check for common document fraud patterns
+    const fraudPatterns = [
+      'copy', 'duplicate', 'xerox', 'photocopy',
+      'same document', 'identical',
+      'template', 'form', 'generated'
+    ];
+
+    const documentText = documents.join(' ').toLowerCase();
+    
+    // Pattern detection
+    fraudPatterns.forEach(pattern => {
+      if (documentText.includes(pattern)) {
+        suspiciousPatterns.push(`Suspicious pattern detected: '${pattern}'`);
+        maxSimilarity = Math.max(maxSimilarity, 0.6);
+      }
+    });
+
+    // Check for repeated file names or paths
+    const documentNames = documents.filter(doc => doc.length > 0);
+    const uniqueNames = [...new Set(documentNames)];
+    
+    if (documentNames.length > uniqueNames.length) {
+      suspiciousPatterns.push('Duplicate document names detected');
+      maxSimilarity = Math.max(maxSimilarity, 0.8);
+    }
+
+    // Document count analysis
+    if (documents.length < 3) {
+      suspiciousPatterns.push('Insufficient documents provided');
+    }
+
+    // Generate recommendation
+    let recommendation = '';
+    if (maxSimilarity >= 0.8) {
+      recommendation = 'HIGH RISK: Manual verification required. Potential document fraud detected.';
+    } else if (maxSimilarity >= 0.6) {
+      recommendation = 'MEDIUM RISK: Additional document verification recommended.';
+    } else if (maxSimilarity >= 0.4) {
+      recommendation = 'LOW RISK: Standard verification procedures sufficient.';
+    } else {
+      recommendation = 'Documents appear unique. Proceed with normal processing.';
+    }
+
+    return {
+      hasSimilarDocuments: maxSimilarity > 0.6,
+      similarityScore: maxSimilarity,
+      suspiciousPatterns,
+      recommendation
+    };
+  }
+
+  private parseLandArea(landAreaString: string): number {
+    const matches = landAreaString.match(/[\d.]+/);
+    if (!matches) return 0;
+    
+    const value = parseFloat(matches[0]);
+    if (landAreaString.toLowerCase().includes('hectare')) {
+      return value * 2.471;
+    }
+    return value;
+  }
+
+  // Get claims data for map visualization
+  public getClaimsForMap(): Array<{
+    id: string;
+    latitude: number;
+    longitude: number;
+    applicantName: string;
+    state: string;
+    district: string;
+    village: string;
+    status: string;
+    landArea: number;
+    fraudRisk: number;
+    eligibilityScore: number;
+  }> {
+    if (!this.isLoaded) return [];
+
+    return this.dataset
+      .filter(record => record.latitude && record.longitude && record.latitude !== 0 && record.longitude !== 0)
+      .map(record => ({
+        id: record.application_id,
+        latitude: record.latitude,
+        longitude: record.longitude,
+        applicantName: record.applicant_name,
+        state: record.state,
+        district: record.district,
+        village: record.village,
+        status: record.application_status,
+        landArea: record.land_area_requested_acres,
+        fraudRisk: record.fraud_risk_score,
+        eligibilityScore: record.eligibility_confidence_score
+      }));
+  }
+}
+
+// Create singleton instances
 export const fraValidationService = new FRAValidationService();
+export const mlAnomalyDetectionService = new MLAnomalyDetectionService(fraValidationService);

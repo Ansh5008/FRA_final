@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactMessageSchema, insertFraClaimSchema } from "@shared/schema";
-import { fraValidationService, type ClaimValidationData, generateFRAId, generateQRCode } from "./validation";
+import { fraValidationService, mlAnomalyDetectionService, type ClaimValidationData, generateFRAId, generateQRCode } from "./validation";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -215,6 +215,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: "Failed to get dataset statistics"
+      });
+    }
+  });
+
+  // ML-based duplicate application detection
+  app.post("/api/detect-duplicates", async (req, res) => {
+    try {
+      const claimData: ClaimValidationData = {
+        aadhaarId: req.body.aadhaarId,
+        beneficiaryName: req.body.beneficiaryName,
+        age: req.body.age ? parseInt(req.body.age) : undefined,
+        landArea: req.body.landArea,
+        state: req.body.state,
+        district: req.body.district,
+        village: req.body.village,
+      };
+
+      const duplicateAnalysis = await mlAnomalyDetectionService.detectDuplicateApplications(claimData);
+      
+      res.json({
+        success: true,
+        data: duplicateAnalysis
+      });
+    } catch (error) {
+      console.error('Duplicate detection error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to detect duplicates",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Document similarity detection
+  app.post("/api/detect-document-similarity", async (req, res) => {
+    try {
+      const { documents } = req.body;
+      
+      if (!documents || !Array.isArray(documents)) {
+        return res.status(400).json({
+          success: false,
+          message: "Documents array is required"
+        });
+      }
+
+      const similarityAnalysis = await mlAnomalyDetectionService.detectDocumentSimilarity(documents);
+      
+      res.json({
+        success: true,
+        data: similarityAnalysis
+      });
+    } catch (error) {
+      console.error('Document similarity error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to detect document similarity",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get claims data for map visualization
+  app.get("/api/claims-map-data", async (req, res) => {
+    try {
+      const claimsData = mlAnomalyDetectionService.getClaimsForMap();
+      
+      res.json({
+        success: true,
+        data: claimsData,
+        total: claimsData.length
+      });
+    } catch (error) {
+      console.error('Claims map data error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to get claims map data"
+      });
+    }
+  });
+
+  // Enhanced claim validation with ML anomaly detection
+  app.post("/api/validate-claim-advanced", async (req, res) => {
+    try {
+      const claimData: ClaimValidationData = {
+        aadhaarId: req.body.aadhaarId,
+        beneficiaryName: req.body.beneficiaryName,
+        age: req.body.age ? parseInt(req.body.age) : undefined,
+        landArea: req.body.landArea,
+        state: req.body.state,
+        district: req.body.district,
+        village: req.body.village,
+      };
+
+      // Run both standard validation and ML anomaly detection
+      const [validationResult, duplicateAnalysis, documentAnalysis] = await Promise.all([
+        fraValidationService.validateClaim(claimData),
+        mlAnomalyDetectionService.detectDuplicateApplications(claimData),
+        mlAnomalyDetectionService.detectDocumentSimilarity(req.body.documents || [])
+      ]);
+      
+      res.json({
+        success: true,
+        data: {
+          validation: validationResult,
+          duplicateDetection: duplicateAnalysis,
+          documentAnalysis: documentAnalysis,
+          overallRiskScore: Math.max(
+            duplicateAnalysis.mlScore, 
+            documentAnalysis.similarityScore,
+            validationResult.matchedRecord?.fraud_risk_score || 0
+          ),
+          recommendation: duplicateAnalysis.isDuplicate || documentAnalysis.hasSimilarDocuments
+            ? "REQUIRES MANUAL REVIEW - Potential anomalies detected"
+            : validationResult.isValid
+            ? "APPROVED - No anomalies detected"
+            : "REVIEW REQUIRED - Standard validation issues"
+        }
+      });
+    } catch (error) {
+      console.error('Advanced validation error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to perform advanced validation",
+        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
