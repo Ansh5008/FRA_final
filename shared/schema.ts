@@ -31,6 +31,7 @@ export const fraClaims = pgTable("fra_claims", {
   claimType: text("claim_type").notNull(), // "Individual Forest Right" | "Community Forest Right"
   landArea: text("land_area").notNull(),
   documents: text("documents").array().notNull(),
+  uploadedFiles: text("uploaded_files").array().default(sql`'{}'::text[]`),
   status: text("status").notNull().default("pending"), // "pending" | "approved" | "rejected"
   coordinates: text("coordinates"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -60,12 +61,16 @@ export const insertFraClaimSchema = createInsertSchema(fraClaims).pick({
   claimType: true,
   landArea: true,
   documents: true,
+  uploadedFiles: true,
   coordinates: true,
   aiScore: true,
   aiFlags: true,
 }).extend({
   claimType: z.enum(["Individual Forest Right", "Community Forest Right"]),
-});
+}).transform(data => ({
+  ...data,
+  aiScore: data.aiScore ?? undefined
+}));
 
 // --- Add TypeScript interfaces for shared use ---
 
@@ -79,6 +84,7 @@ export interface FraClaim {
   claimType: "Individual Forest Right" | "Community Forest Right";
   landArea: string;
   documents: string[];
+  uploadedFiles?: string[];
   coordinates?: string | null;
   status: "pending" | "approved" | "rejected";
   createdAt: Date;

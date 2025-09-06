@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, FileText, MapPin, User, CheckCircle, Shield, AlertTriangle, Check, X, CreditCard, Calendar } from "lucide-react";
+import { ArrowLeft, FileText, MapPin, User, CheckCircle, Shield, AlertTriangle, Check, X, CreditCard, Calendar, Upload, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 
 const claimFormSchema = z.object({
@@ -27,6 +27,7 @@ const claimFormSchema = z.object({
   claimType: z.string().min(1, "Please select claim type"),
   landArea: z.string().min(1, "Land area is required"),
   documents: z.array(z.string()).min(1, "At least one document is required"),
+  uploadedFiles: z.array(z.any()).optional(),
 });
 
 type ClaimForm = z.infer<typeof claimFormSchema>;
@@ -49,6 +50,7 @@ export default function ClaimFormPage() {
   const [submittedClaim, setSubmittedClaim] = useState<any>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [validationChecked, setValidationChecked] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   
   const form = useForm<ClaimForm>({
     resolver: zodResolver(claimFormSchema),
@@ -61,7 +63,8 @@ export default function ClaimFormPage() {
       state: "",
       claimType: "",
       landArea: "",
-      documents: []
+      documents: [],
+      uploadedFiles: []
     }
   });
 
@@ -153,7 +156,13 @@ export default function ClaimFormPage() {
     // Auto-generate coordinates based on village (demo purposes)
     const claimData = {
       ...data,
-      coordinates: "23.3441,85.3096" // Demo coordinates
+      coordinates: "23.3441,85.3096", // Demo coordinates
+      uploadedFiles: uploadedFiles.map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      }))
     };
     submitMutation.mutate(claimData);
   };
@@ -433,6 +442,88 @@ export default function ClaimFormPage() {
                   )}
                 </div>
 
+                {/* File Upload Section */}
+                <div>
+                  <Label>Upload Document Files</Label>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <Upload className="w-10 h-10 text-muted-foreground mb-2" />
+                        <div className="text-sm text-muted-foreground mb-4">
+                          <p>Click to upload or drag and drop</p>
+                          <p className="text-xs">PDF, JPG, PNG files up to 10MB each</p>
+                        </div>
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            const validFiles = files.filter(file => {
+                              const maxSize = 10 * 1024 * 1024; // 10MB
+                              const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                              return file.size <= maxSize && validTypes.includes(file.type);
+                            });
+                            
+                            if (validFiles.length !== files.length) {
+                              toast({
+                                title: "Invalid Files",
+                                description: "Some files were skipped. Only PDF, JPG, PNG under 10MB are allowed.",
+                                variant: "destructive",
+                              });
+                            }
+                            
+                            setUploadedFiles(prev => [...prev, ...validFiles]);
+                            form.setValue("uploadedFiles", [...uploadedFiles, ...validFiles]);
+                          }}
+                          className="hidden"
+                          id="file-upload"
+                          data-testid="input-file-upload"
+                        />
+                        <label htmlFor="file-upload" className="cursor-pointer">
+                          <Button type="button" variant="outline" className="pointer-events-none">
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose Files
+                          </Button>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Display uploaded files */}
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Uploaded Files ({uploadedFiles.length})</Label>
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="w-4 h-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">{file.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const newFiles = uploadedFiles.filter((_, i) => i !== index);
+                                setUploadedFiles(newFiles);
+                                form.setValue("uploadedFiles", newFiles);
+                              }}
+                              data-testid={`button-remove-file-${index}`}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Validation Section */}
                 <div className="space-y-4">
                   <div className="flex gap-4">
@@ -550,7 +641,7 @@ export default function ClaimFormPage() {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={submitMutation.isPending || !validationChecked || (validationResult && !validationResult.isValid)}
+                    disabled={submitMutation.isPending || !validationChecked || (validationResult?.isValid === false)}
                     data-testid="button-submit-claim"
                   >
                     <FileText className="w-4 h-4 mr-2" />
