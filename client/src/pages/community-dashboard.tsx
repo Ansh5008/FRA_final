@@ -30,18 +30,22 @@ interface FraClaim {
   status: string;
   createdAt: string;
   updatedAt: string;
+  fraId?: string;
+  qrCode?: string;
 }
 
 export default function CommunityDashboard() {
   const [selectedVillage, setSelectedVillage] = useState("Bansjore");
   const [lastSynced, setLastSynced] = useState(new Date());
 
-  const { data: claimsData, isLoading } = useQuery({
+  const { data: claimsData, isLoading, refetch } = useQuery({
     queryKey: ['/api/claims'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/claims');
       return response.json();
-    }
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+    refetchIntervalInBackground: true
   });
 
   const claims: FraClaim[] = claimsData?.data || [];
@@ -88,11 +92,11 @@ export default function CommunityDashboard() {
     );
   };
 
-  // Simulate auto-sync every 24 hours
+  // Update last synced time with real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       setLastSynced(new Date());
-    }, 24 * 60 * 60 * 1000); // 24 hours
+    }, 30000); // Update every 30 seconds to match refetch interval
 
     return () => clearInterval(interval);
   }, []);
@@ -132,8 +136,20 @@ export default function CommunityDashboard() {
                   <RefreshCw className="w-4 h-4 mr-1" />
                   Last synced: {lastSynced.toLocaleTimeString()}
                 </p>
-                <p>Auto-sync every 24 hours</p>
+                <p>Auto-sync every 30 seconds</p>
               </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  refetch();
+                  setLastSynced(new Date());
+                }}
+                data-testid="button-refresh-claims"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh Now
+              </Button>
               <Link to="/admin">
                 <Button variant="outline">
                   Admin View
@@ -248,14 +264,33 @@ export default function CommunityDashboard() {
                       animate={{ opacity: 1, x: 0 }}
                       className="flex items-center justify-between p-4 bg-muted/30 rounded-lg"
                     >
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4 flex-1">
                         {getStatusIcon(claim.status)}
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">Claim ID: {claim.claimId}</p>
                           <p className="text-sm text-muted-foreground">
                             {claim.claimType} - {claim.landArea}
                           </p>
+                          {claim.fraId && (
+                            <p className="text-xs text-primary font-medium">
+                              FRA ID: {claim.fraId}
+                            </p>
+                          )}
                         </div>
+                        {/* QR Code Display */}
+                        {claim.qrCode && (
+                          <div className="flex flex-col items-center">
+                            <div className="bg-white p-2 rounded border border-primary/20">
+                              <img 
+                                src={claim.qrCode} 
+                                alt={`QR Code for claim ${claim.claimId}`}
+                                className="w-16 h-16"
+                                data-testid={`qr-code-${claim.claimId}`}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">QR Code</p>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center space-x-3">
                         <div className="text-right text-sm">
@@ -292,7 +327,7 @@ export default function CommunityDashboard() {
                   <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
                   <h3 className="font-semibold mb-2">Real-time Updates</h3>
                   <p className="text-sm text-muted-foreground">
-                    Claim status updates automatically sync every 24 hours
+                    Claim status updates automatically sync every 30 seconds
                   </p>
                 </div>
                 <div className="text-center p-4">

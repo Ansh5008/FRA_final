@@ -76,6 +76,8 @@ export class MemStorage implements IStorage {
       claimId,
       status: "pending",
       coordinates: insertClaim.coordinates || null,
+      fraId: insertClaim.fraId,
+      qrCode: insertClaim.qrCode,
       createdAt: new Date(),
       updatedAt: new Date()
     };

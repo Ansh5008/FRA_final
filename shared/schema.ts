@@ -24,6 +24,8 @@ export const contactMessages = pgTable("contact_messages", {
 export const fraClaims = pgTable("fra_claims", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   claimId: text("claim_id").notNull().unique(),
+  fraId: text("fra_id"), // Generated FRA ID for QR codes
+  qrCode: text("qr_code"), // Base64 encoded QR code
   beneficiaryName: text("beneficiary_name").notNull(),
   village: text("village").notNull(),
   district: text("district").notNull(),
@@ -78,6 +80,8 @@ export const insertFraClaimSchema = createInsertSchema(fraClaims).pick({
 export interface FraClaim {
   id: string;
   claimId: string;
+  fraId?: string; // Generated FRA ID for QR codes
+  qrCode?: string; // Base64 encoded QR code
   beneficiaryName: string;
   village: string;
   district: string;

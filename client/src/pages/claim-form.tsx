@@ -209,7 +209,31 @@ export default function ClaimFormPage() {
                     <span className="font-medium">Location:</span>
                     <p>{submittedClaim.village}, {submittedClaim.district}</p>
                   </div>
+                  {submittedClaim.fraId && (
+                    <div>
+                      <span className="font-medium">FRA ID:</span>
+                      <p className="text-primary font-bold">{submittedClaim.fraId}</p>
+                    </div>
+                  )}
                 </div>
+                
+                {/* QR Code Display */}
+                {submittedClaim.qrCode && (
+                  <div className="flex flex-col items-center space-y-3 pt-4 border-t">
+                    <div className="text-center">
+                      <span className="font-medium text-sm">QR Code for Verification</span>
+                      <p className="text-xs text-muted-foreground">Scan this code for quick claim verification</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border-2 border-primary/20">
+                      <img 
+                        src={submittedClaim.qrCode} 
+                        alt={`QR Code for claim ${submittedClaim.claimId}`}
+                        className="w-32 h-32"
+                        data-testid="qr-code-display"
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                   <p className="text-sm">
                     <strong>SMS Confirmation:</strong> "आपका FRA दावा (ID: {submittedClaim.claimId}) सफलतापूर्वक जमा किया गया है। 
@@ -422,7 +446,7 @@ export default function ClaimFormPage() {
                           type="checkbox"
                           value={docType}
                           onChange={(e) => {
-                            const currentDocs = form.getValues("documents");
+                            const currentDocs = form.getValues("documents") || [];
                             if (e.target.checked) {
                               form.setValue("documents", [...currentDocs, docType]);
                             } else {

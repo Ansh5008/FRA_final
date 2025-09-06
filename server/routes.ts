@@ -57,9 +57,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate QR code for the FRA ID
       const qrCode = await generateQRCode(fraId);
       
-      // Clean the data for storage
+      // Clean the data for storage and include fraId and qrCode
       const validatedData = {
         ...parsedData,
+        fraId,
+        qrCode,
         uploadedFiles: parsedData.uploadedFiles?.filter(Boolean) || [],
         aiFlags: parsedData.aiFlags?.filter(Boolean) || [],
         documents: parsedData.documents?.filter(Boolean) || []
@@ -67,17 +69,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const claim = await storage.createFraClaim(validatedData);
       
-      // Add FRA ID and QR code to response
-      const claimWithFRAData = {
-        ...claim,
-        fraId,
-        qrCode
-      };
-      
       res.json({ 
         success: true, 
         message: "FRA claim submitted successfully",
-        data: claimWithFRAData
+        data: claim
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
