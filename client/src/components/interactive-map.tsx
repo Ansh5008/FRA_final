@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { MapPin, Search, Loader2, Layers, Download, Share2, Ruler, Home, Building, TreePine, MapIcon, Bookmark } from 'lucide-react';
+import { MapPin, Search, Loader2, Layers, Download, Share2, Ruler, Home, Building, TreePine, MapIcon, Bookmark, BarChart3 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Fix for default markers in React
@@ -346,6 +346,31 @@ const InteractiveMap: React.FC = () => {
 
     setMapStats({ buildings: buildingCount, landUse: landUseCount, area: 0 });
   };
+
+  // Layer visibility control effect
+  useEffect(() => {
+    if (buildingLayerGroupRef.current && landUseLayerGroupRef.current && mapInstanceRef.current) {
+      if (showBuildings) {
+        if (!mapInstanceRef.current.hasLayer(buildingLayerGroupRef.current)) {
+          mapInstanceRef.current.addLayer(buildingLayerGroupRef.current);
+        }
+      } else {
+        if (mapInstanceRef.current.hasLayer(buildingLayerGroupRef.current)) {
+          mapInstanceRef.current.removeLayer(buildingLayerGroupRef.current);
+        }
+      }
+      
+      if (showLandUse) {
+        if (!mapInstanceRef.current.hasLayer(landUseLayerGroupRef.current)) {
+          mapInstanceRef.current.addLayer(landUseLayerGroupRef.current);
+        }
+      } else {
+        if (mapInstanceRef.current.hasLayer(landUseLayerGroupRef.current)) {
+          mapInstanceRef.current.removeLayer(landUseLayerGroupRef.current);
+        }
+      }
+    }
+  }, [showBuildings, showLandUse]);
 
   const handleGenerateMap = async (): Promise<void> => {
     if (!location.trim()) {
