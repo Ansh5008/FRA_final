@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { MapPin, Search, Loader2, Layers, Download, Share2, Ruler, Home, Building, TreePine, MapIcon, Bookmark, BarChart3 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useQuery } from '@tanstack/react-query';
 
 // Fix for default markers in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
