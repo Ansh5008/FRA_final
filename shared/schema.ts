@@ -30,6 +30,7 @@ export const fraClaims = pgTable("fra_claims", {
   state: text("state").notNull(),
   claimType: text("claim_type").notNull(), // "Individual Forest Right" | "Community Forest Right"
   landArea: text("land_area").notNull(),
+  landType: text("land_type"), // "Agricultural" | "Community Forest Resource" | "Habitation" | "Water Bodies" | "Grazing"
   documents: text("documents").array().default(sql`'{}'::text[]`),
   uploadedFiles: text("uploaded_files").array().default(sql`'{}'::text[]`),
   status: text("status").notNull().default("pending"), // "pending" | "approved" | "rejected"
@@ -83,6 +84,7 @@ export interface FraClaim {
   state: string;
   claimType: "Individual Forest Right" | "Community Forest Right";
   landArea: string;
+  landType?: string; // "Agricultural" | "Community Forest Resource" | "Habitation" | "Water Bodies" | "Grazing"
   documents: string[];
   uploadedFiles?: string[];
   coordinates?: string | null;
