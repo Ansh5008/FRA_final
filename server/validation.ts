@@ -1,6 +1,7 @@
 import fs from 'fs';
 import csv from 'csv-parser';
 import path from 'path';
+import * as QRCode from 'qrcode';
 
 export interface FRADatasetRecord {
   application_id: string;
@@ -64,6 +65,39 @@ export interface ClaimValidationData {
   village: string;
 }
 
+// FRA ID Generation utilities
+export function generateFRAId(): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `FRA-2025-${timestamp.toString().slice(-6)}-${random}`;
+}
+
+export async function generateQRCode(fraId: string): Promise<string> {
+  try {
+    const qrCodeData = {
+      fraId,
+      generatedAt: new Date().toISOString(),
+      type: 'FRA_CLAIM',
+      version: '1.0'
+    };
+    
+    // Generate QR code as base64 data URL
+    const qrCodeString = await QRCode.toDataURL(JSON.stringify(qrCodeData), {
+      width: 256,
+      margin: 2,
+      color: {
+        dark: '#2D5016', // Forest green
+        light: '#F5F5DC'  // Beige background
+      }
+    });
+    
+    return qrCodeString;
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    throw new Error('Failed to generate QR code');
+  }
+}
+
 class FRAValidationService {
   private dataset: FRADatasetRecord[] = [];
   private isLoaded = false;
@@ -74,7 +108,7 @@ class FRAValidationService {
 
   private async loadDataset(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const csvPath = path.resolve(process.cwd(), 'attached_assets', 'fra_land_claim_dataset_500_users_1757137800126.csv');
+      const csvPath = path.resolve(process.cwd(), 'attached_assets', 'fra_dataset_full_500_1757140774915.csv');
       
       if (!fs.existsSync(csvPath)) {
         console.error('FRA dataset CSV not found at:', csvPath);
