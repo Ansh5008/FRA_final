@@ -12,11 +12,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileText, MapPin, User, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, FileText, MapPin, User, CheckCircle, Shield, AlertTriangle, Check, X, CreditCard, Calendar } from "lucide-react";
 import { Link } from "wouter";
 
 const claimFormSchema = z.object({
+  aadhaarId: z.string().optional(),
   beneficiaryName: z.string().min(2, "Name must be at least 2 characters"),
+  age: z.string().min(1, "Age is required"),
   village: z.string().min(2, "Village name is required"),
   district: z.string().min(2, "District is required"),
   state: z.string().min(2, "State is required"),
@@ -27,20 +31,75 @@ const claimFormSchema = z.object({
 
 type ClaimForm = z.infer<typeof claimFormSchema>;
 
+interface ValidationResult {
+  isValid: boolean;
+  userFound: boolean;
+  eligibilityChecks: {
+    ageEligible: boolean;
+    landAreaEligible: boolean;
+    generationEligible: boolean;
+  };
+  matchedRecord?: any;
+  errors: string[];
+  warnings: string[];
+}
+
 export default function ClaimFormPage() {
   const { toast } = useToast();
   const [submittedClaim, setSubmittedClaim] = useState<any>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [validationChecked, setValidationChecked] = useState(false);
   
   const form = useForm<ClaimForm>({
     resolver: zodResolver(claimFormSchema),
     defaultValues: {
+      aadhaarId: "",
       beneficiaryName: "",
+      age: "",
       village: "",
       district: "",
       state: "",
       claimType: "",
       landArea: "",
       documents: []
+    }
+  });
+
+  const validateMutation = useMutation({
+    mutationFn: async (data: ClaimForm) => {
+      const response = await apiRequest('POST', '/api/validate-claim', {
+        aadhaarId: data.aadhaarId,
+        beneficiaryName: data.beneficiaryName,
+        age: parseInt(data.age),
+        landArea: data.landArea,
+        state: data.state,
+        district: data.district,
+        village: data.village,
+      });
+      return response.json();
+    },
+    onSuccess: (response) => {
+      setValidationResult(response.data);
+      setValidationChecked(true);
+      if (response.data.isValid) {
+        toast({
+          title: "Validation Successful!",
+          description: "All eligibility criteria met. You can now submit your claim.",
+        });
+      } else {
+        toast({
+          title: "Validation Issues Found",
+          description: "Please review the validation results before submitting.",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Validation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 
@@ -56,6 +115,8 @@ export default function ClaimFormPage() {
         description: `Your claim ID is ${response.data.claimId}. You will receive SMS updates.`,
       });
       form.reset();
+      setValidationResult(null);
+      setValidationChecked(false);
     },
     onError: (error) => {
       toast({
@@ -66,7 +127,29 @@ export default function ClaimFormPage() {
     }
   });
 
+  const onValidate = (data: ClaimForm) => {
+    validateMutation.mutate(data);
+  };
+
   const onSubmit = (data: ClaimForm) => {
+    if (!validationChecked) {
+      toast({
+        title: "Validation Required",
+        description: "Please validate your claim before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (validationResult && !validationResult.isValid) {
+      toast({
+        title: "Validation Failed",
+        description: "Please fix validation issues before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Auto-generate coordinates based on village (demo purposes)
     const claimData = {
       ...data,
@@ -198,6 +281,37 @@ export default function ClaimFormPage() {
                   </div>
 
                   <div>
+                    <Label htmlFor="age">Age</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      placeholder="Enter your age"
+                      {...form.register("age")}
+                      data-testid="input-age"
+                    />
+                    {form.formState.errors.age && (
+                      <p className="text-destructive text-sm mt-1">
+                        {form.formState.errors.age.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="aadhaarId">Aadhaar ID (Optional)</Label>
+                    <Input
+                      id="aadhaarId"
+                      placeholder="xxxx-xxxx-xxxx"
+                      {...form.register("aadhaarId")}
+                      data-testid="input-aadhaar-id"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Providing Aadhaar ID helps with faster validation
+                    </p>
+                  </div>
+
+                  <div>
                     <Label htmlFor="claimType">Claim Type</Label>
                     <Select onValueChange={(value) => form.setValue("claimType", value)}>
                       <SelectTrigger data-testid="select-claim-type">
@@ -276,10 +390,13 @@ export default function ClaimFormPage() {
                   <Label htmlFor="landArea">Land Area</Label>
                   <Input
                     id="landArea"
-                    placeholder="e.g., 2 acres"
+                    placeholder="e.g., 2 acres (max 4 acres allowed)"
                     {...form.register("landArea")}
                     data-testid="input-land-area"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Individual claims must be less than 4 acres/hectares
+                  </p>
                   {form.formState.errors.landArea && (
                     <p className="text-destructive text-sm mt-1">
                       {form.formState.errors.landArea.message}
@@ -316,15 +433,136 @@ export default function ClaimFormPage() {
                   )}
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={submitMutation.isPending}
-                  data-testid="button-submit-claim"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  {submitMutation.isPending ? "Submitting..." : "Submit FRA Claim"}
-                </Button>
+                {/* Validation Section */}
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      onClick={form.handleSubmit(onValidate)}
+                      variant="outline"
+                      disabled={validateMutation.isPending}
+                      data-testid="button-validate-claim"
+                      className="flex-1"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      {validateMutation.isPending ? "Validating..." : "Validate Claim"}
+                    </Button>
+                  </div>
+
+                  {/* Validation Results */}
+                  {validationResult && (
+                    <Card className={`border-2 ${validationResult.isValid ? 'border-green-200 bg-green-50 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:bg-red-900/20'}`}>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center space-x-2 text-lg">
+                          {validationResult.isValid ? 
+                            <Check className="w-5 h-5 text-green-600" /> : 
+                            <X className="w-5 h-5 text-red-600" />
+                          }
+                          <span>Validation Results</span>
+                          <Badge variant={validationResult.isValid ? "default" : "destructive"}>
+                            {validationResult.userFound ? "User Found" : "User Not Found"}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Eligibility Checks */}
+                        <div>
+                          <h4 className="font-medium mb-2">Eligibility Criteria</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div className="flex items-center space-x-2">
+                              {validationResult.eligibilityChecks.ageEligible ? 
+                                <Check className="w-4 h-4 text-green-600" /> : 
+                                <X className="w-4 h-4 text-red-600" />
+                              }
+                              <span className="text-sm">Age ≥ 18 years</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {validationResult.eligibilityChecks.landAreaEligible ? 
+                                <Check className="w-4 h-4 text-green-600" /> : 
+                                <X className="w-4 h-4 text-red-600" />
+                              }
+                              <span className="text-sm">Land ≤ 4 acres</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {validationResult.eligibilityChecks.generationEligible ? 
+                                <Check className="w-4 h-4 text-green-600" /> : 
+                                <X className="w-4 h-4 text-red-600" />
+                              }
+                              <span className="text-sm">75+ years residence</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Errors */}
+                        {validationResult.errors.length > 0 && (
+                          <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription>
+                              <strong>Issues Found:</strong>
+                              <ul className="list-disc list-inside mt-1">
+                                {validationResult.errors.map((error, index) => (
+                                  <li key={index} className="text-sm">{error}</li>
+                                ))}
+                              </ul>
+                            </AlertDescription>
+                          </Alert>
+                        )}
+
+                        {/* Warnings */}
+                        {validationResult.warnings.length > 0 && (
+                          <Alert>
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription>
+                              <strong>Warnings:</strong>
+                              <ul className="list-disc list-inside mt-1">
+                                {validationResult.warnings.map((warning, index) => (
+                                  <li key={index} className="text-sm">{warning}</li>
+                                ))}
+                              </ul>
+                            </AlertDescription>
+                          </Alert>
+                        )}
+
+                        {/* Matched Record Info */}
+                        {validationResult.matchedRecord && (
+                          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                            <h4 className="font-medium text-sm mb-2">Database Record Found:</h4>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">Name:</span> {validationResult.matchedRecord.applicant_name}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Age:</span> {validationResult.matchedRecord.age} years
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Location:</span> {validationResult.matchedRecord.village}, {validationResult.matchedRecord.district}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Forest Years:</span> {validationResult.matchedRecord.years_in_forest_area} years
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={submitMutation.isPending || !validationChecked || (validationResult && !validationResult.isValid)}
+                    data-testid="button-submit-claim"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    {submitMutation.isPending ? "Submitting..." : "Submit FRA Claim"}
+                  </Button>
+
+                  {!validationChecked && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      Please validate your claim before submitting
+                    </p>
+                  )}
+                </div>
               </form>
             </CardContent>
           </Card>
