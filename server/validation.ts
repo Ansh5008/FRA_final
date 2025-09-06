@@ -108,7 +108,7 @@ class FRAValidationService {
 
   private async loadDataset(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const csvPath = path.resolve(process.cwd(), 'attached_assets', 'fra_dataset_full_500_1757140774915.csv');
+      const csvPath = path.resolve(process.cwd(), 'attached_assets', 'fra_dataset_selectedstates_randomvillages_1757149526453.csv');
       
       if (!fs.existsSync(csvPath)) {
         console.error('FRA dataset CSV not found at:', csvPath);
@@ -125,7 +125,7 @@ class FRAValidationService {
           const record: FRADatasetRecord = {
             application_id: data.application_id,
             family_id: data.family_id,
-            aadhaar_id: data.aadhaar_id || data.id_proofs || '',
+            aadhaar_id: data.aadhaar_id || '',
             applicant_name: data.applicant_name,
             age: parseInt(data.age) || 0,
             gender: data.gender,
@@ -134,31 +134,31 @@ class FRAValidationService {
             village: data.village,
             tribe: data.tribe,
             community_category: data.community_category,
-            is_scheduled_tribe: data.is_scheduled_tribe === 'True',
-            family_size: parseInt(data.family_size) || 0,
-            dependents: parseInt(data.dependents) || 0,
+            is_scheduled_tribe: data.community_category === 'ST',
+            family_size: 1, // Not in new dataset, default value
+            dependents: 0, // Not in new dataset, default value  
             land_area_requested_acres: parseFloat(data.land_area_requested_acres) || 0,
             land_type: data.land_type,
             has_previous_claim: data.has_previous_claim === 'True',
-            has_aadhaar: data.has_aadhaar === 'True',
-            has_community_proof: data.has_community_proof === 'True',
-            has_tribal_proof: data.has_tribal_proof === 'True',
-            has_medical_certificate: data.has_medical_certificate === 'True',
-            document_completeness: data.document_completeness,
+            has_aadhaar: Boolean(data.aadhaar_id), // True if aadhaar_id exists
+            has_community_proof: data.caste_certificate === 'True',
+            has_tribal_proof: data.community_category === 'ST',
+            has_medical_certificate: false, // Not in new dataset, default value
+            document_completeness: 'Complete', // Default value
             years_in_forest_area: parseInt(data.years_in_forest_area) || 0,
-            occupation: data.occupation,
-            annual_income: parseInt(data.annual_income) || 0,
+            occupation: 'Traditional Forest Use', // Default value
+            annual_income: 0, // Not in new dataset, default value
             application_date: data.application_date,
             application_status: data.application_status,
             document_authenticity_score: parseFloat(data.document_authenticity_score) || 0,
             eligibility_confidence_score: parseFloat(data.eligibility_confidence_score) || 0,
             fraud_risk_score: parseFloat(data.fraud_risk_score) || 0,
             gram_sabha_date: data.gram_sabha_date || undefined,
-            frc_recommendation: data.frc_recommendation || undefined,
-            latitude: parseFloat(data.latitude) || 0,
-            longitude: parseFloat(data.longitude) || 0,
-            created_timestamp: data.created_timestamp,
-            last_updated: data.last_updated
+            frc_recommendation: undefined, // Not in new dataset
+            latitude: 0, // Not in new dataset, using default
+            longitude: 0, // Not in new dataset, using default
+            created_timestamp: new Date().toISOString(),
+            last_updated: new Date().toISOString()
           };
           results.push(record);
         })
@@ -225,29 +225,21 @@ class FRAValidationService {
     // Find matching record in dataset
     let matchedRecord: FRADatasetRecord | undefined;
 
-    // Debug logging
-    console.log(`Validating claim for: ${claimData.beneficiaryName}, Aadhaar: ${claimData.aadhaarId}`);
-    console.log(`Dataset size: ${this.dataset.length}`);
-    
     // Try to match by Aadhaar ID first (most reliable)
     if (claimData.aadhaarId) {
-      console.log(`Searching by Aadhaar ID: ${claimData.aadhaarId}`);
       matchedRecord = this.dataset.find(record => 
         record.aadhaar_id && record.aadhaar_id === claimData.aadhaarId
       );
-      console.log(`Aadhaar match found: ${!!matchedRecord}`);
     }
 
     // If no Aadhaar match, try matching by name and location
     if (!matchedRecord) {
-      console.log(`Searching by name and location: ${claimData.beneficiaryName}, ${claimData.state}, ${claimData.district}, ${claimData.village}`);
       matchedRecord = this.dataset.find(record => 
         record.applicant_name.toLowerCase() === claimData.beneficiaryName.toLowerCase() &&
         record.state.toLowerCase() === claimData.state.toLowerCase() &&
         record.district.toLowerCase() === claimData.district.toLowerCase() &&
         record.village.toLowerCase() === claimData.village.toLowerCase()
       );
-      console.log(`Name/location match found: ${!!matchedRecord}`);
     }
 
     // Check if user found in database
