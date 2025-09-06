@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import InteractiveMap from "@/components/interactive-map";
+import { CadastralMap } from "@/components/cadastral-map";
 
 interface ValidationResult {
   isValid: boolean;
@@ -331,11 +332,12 @@ export default function AdminDashboard() {
           </div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">GIS Overview</TabsTrigger>
               <TabsTrigger value="claims">Claims List</TabsTrigger>
               <TabsTrigger value="alerts">AI Alerts</TabsTrigger>
               <TabsTrigger value="search">Claim Search</TabsTrigger>
+              <TabsTrigger value="cadastral">Cadastral Maps</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -571,6 +573,10 @@ export default function AdminDashboard() {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="cadastral" className="space-y-6">
+              <CadastralMap data-testid="cadastral-map-component" />
             </TabsContent>
           </Tabs>
 
