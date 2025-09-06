@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactMessageSchema, insertFraClaimSchema } from "@shared/schema";
-import { fraValidationService, type ClaimValidationData } from "./validation";
+import { fraValidationService, type ClaimValidationData, generateFRAId, generateQRCode } from "./validation";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -49,13 +49,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FRA Claims endpoints
   app.post("/api/claims", async (req, res) => {
     try {
-      const validatedData = insertFraClaimSchema.parse(req.body);
+      const parsedData = insertFraClaimSchema.parse(req.body);
+      
+      // Generate unique FRA ID
+      const fraId = generateFRAId();
+      
+      // Generate QR code for the FRA ID
+      const qrCode = await generateQRCode(fraId);
+      
+      // Clean the data for storage
+      const validatedData = {
+        ...parsedData,
+        uploadedFiles: parsedData.uploadedFiles?.filter(Boolean) || [],
+        aiFlags: parsedData.aiFlags?.filter(Boolean) || []
+      };
+      
       const claim = await storage.createFraClaim(validatedData);
+      
+      // Add FRA ID and QR code to response
+      const claimWithFRAData = {
+        ...claim,
+        fraId,
+        qrCode
+      };
       
       res.json({ 
         success: true, 
         message: "FRA claim submitted successfully",
-        data: claim
+        data: claimWithFRAData
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
