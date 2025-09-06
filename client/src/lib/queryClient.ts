@@ -33,7 +33,10 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const base = import.meta.env.VITE_API_URL || '';
     const url = queryKey.join("/") as string;
-    const fullUrl = url.startsWith('http') ? url : `${base}${url}`;
+    // Ensure URL starts with proper path
+    const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
+    const fullUrl = normalizedUrl.startsWith('http') ? normalizedUrl : `${base}${normalizedUrl}`;
+    
     const res = await fetch(fullUrl, {
       credentials: "include",
     });
