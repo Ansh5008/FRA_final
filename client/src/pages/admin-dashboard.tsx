@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { 
   MapPin, 
   BarChart3, 
@@ -18,7 +20,12 @@ import {
   Search,
   ArrowLeft,
   Eye,
-  TrendingUp
+  TrendingUp,
+  FileText,
+  Calendar,
+  MapIcon,
+  ThumbsUp,
+  ThumbsDown
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -31,14 +38,20 @@ interface FraClaim {
   state: string;
   claimType: string;
   landArea: string;
+  documents: string[];
+  coordinates?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
+  aiScore?: number;
+  aiFlags?: string[];
 }
 
 export default function AdminDashboard() {
   const [searchClaimId, setSearchClaimId] = useState("");
   const [selectedClaim, setSelectedClaim] = useState<FraClaim | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const { data: claimsData, isLoading } = useQuery({
     queryKey: ['/api/claims'],
@@ -49,6 +62,29 @@ export default function AdminDashboard() {
   });
 
   const claims: FraClaim[] = claimsData?.data || [];
+
+  // Mutation for updating claim status
+  const updateClaimStatus = useMutation({
+    mutationFn: async ({ claimId, status }: { claimId: string, status: string }) => {
+      const response = await apiRequest('PATCH', `/api/claims/${claimId}/status`, { status });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/claims'] });
+      toast({
+        title: "Status Updated",
+        description: `Claim ${data.data?.claimId} has been ${data.data?.status}.`,
+      });
+      setDetailModalOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update claim status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Calculate statistics
   const stats = {
@@ -110,6 +146,19 @@ export default function AdminDashboard() {
   const searchClaim = () => {
     const claim = claims.find(c => c.claimId.toLowerCase().includes(searchClaimId.toLowerCase()));
     setSelectedClaim(claim || null);
+  };
+
+  const handleApprove = (claimId: string) => {
+    updateClaimStatus.mutate({ claimId, status: 'approved' });
+  };
+
+  const handleReject = (claimId: string) => {
+    updateClaimStatus.mutate({ claimId, status: 'rejected' });
+  };
+
+  const openClaimDetails = (claim: FraClaim) => {
+    setSelectedClaim(claim);
+    setDetailModalOpen(true);
   };
 
   if (isLoading) {
@@ -307,8 +356,14 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center space-x-3">
                           {getStatusBadge(claim.status)}
-                          <Button variant="outline" size="sm" onClick={() => setSelectedClaim(claim)}>
-                            <Eye className="w-4 h-4" />
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => openClaimDetails(claim)}
+                            data-testid={`button-view-${claim.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
                           </Button>
                         </div>
                       </div>
@@ -425,6 +480,197 @@ export default function AdminDashboard() {
               </Card>
             </TabsContent>
           </Tabs>
+
+          {/* Detailed Claim Modal */}
+          <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <FileText className="w-5 h-5" />
+                  <span>Claim Details - {selectedClaim?.claimId}</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Complete information and documents for this FRA claim
+                </DialogDescription>
+              </DialogHeader>
+              
+              {selectedClaim && (
+                <div className="space-y-6">
+                  {/* Status and Actions */}
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm font-medium">Current Status:</span>
+                      {getStatusBadge(selectedClaim.status)}
+                    </div>
+                    {selectedClaim.status === 'pending' && (
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() => handleApprove(selectedClaim.id)}
+                          disabled={updateClaimStatus.isPending}
+                          className="bg-green-600 hover:bg-green-700"
+                          data-testid="button-approve"
+                        >
+                          <ThumbsUp className="w-4 h-4 mr-2" />
+                          Approve
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleReject(selectedClaim.id)}
+                          disabled={updateClaimStatus.isPending}
+                          data-testid="button-reject"
+                        >
+                          <ThumbsDown className="w-4 h-4 mr-2" />
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Claim Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Beneficiary Information</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Name:</span>
+                          <p className="text-lg">{selectedClaim.beneficiaryName}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Claim ID:</span>
+                          <p className="font-mono text-sm bg-muted px-2 py-1 rounded">{selectedClaim.claimId}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Claim Type:</span>
+                          <p>{selectedClaim.claimType}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Land Area:</span>
+                          <p className="text-lg font-semibold">{selectedClaim.landArea}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center space-x-2">
+                          <MapIcon className="w-5 h-5" />
+                          <span>Location Details</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Village:</span>
+                          <p>{selectedClaim.village}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">District:</span>
+                          <p>{selectedClaim.district}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">State:</span>
+                          <p>{selectedClaim.state}</p>
+                        </div>
+                        {selectedClaim.coordinates && (
+                          <div>
+                            <span className="text-sm font-medium text-muted-foreground">GPS Coordinates:</span>
+                            <p className="font-mono text-sm bg-muted px-2 py-1 rounded">{selectedClaim.coordinates}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Documents */}
+                  {selectedClaim.documents && selectedClaim.documents.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center space-x-2">
+                          <FileText className="w-5 h-5" />
+                          <span>Supporting Documents</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {selectedClaim.documents.map((doc, index) => (
+                            <div key={index} className="flex items-center p-2 border rounded">
+                              <FileText className="w-4 h-4 mr-2 text-muted-foreground" />
+                              <span className="text-sm">{doc}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* AI Analysis */}
+                  {(selectedClaim.aiScore !== undefined || selectedClaim.aiFlags) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center space-x-2">
+                          <BarChart3 className="w-5 h-5" />
+                          <span>AI Analysis</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {selectedClaim.aiScore !== undefined && (
+                          <div>
+                            <span className="text-sm font-medium text-muted-foreground">Risk Score:</span>
+                            <div className="flex items-center space-x-2">
+                              <div className="flex-1 bg-muted h-2 rounded">
+                                <div 
+                                  className={`h-2 rounded ${selectedClaim.aiScore > 0.7 ? 'bg-red-500' : selectedClaim.aiScore > 0.4 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                                  style={{ width: `${selectedClaim.aiScore * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium">{Math.round(selectedClaim.aiScore * 100)}%</span>
+                            </div>
+                          </div>
+                        )}
+                        {selectedClaim.aiFlags && selectedClaim.aiFlags.length > 0 && (
+                          <div>
+                            <span className="text-sm font-medium text-muted-foreground">AI Flags:</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {selectedClaim.aiFlags.map((flag, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {flag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Timeline */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center space-x-2">
+                        <Calendar className="w-5 h-5" />
+                        <span>Timeline</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Submitted:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(selectedClaim.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Last Updated:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(selectedClaim.updatedAt).toLocaleString()}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </motion.div>
       </div>
     </div>
