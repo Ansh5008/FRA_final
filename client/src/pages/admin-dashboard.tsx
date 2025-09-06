@@ -25,9 +25,26 @@ import {
   Calendar,
   MapIcon,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  Shield,
+  Check,
+  X,
+  Database
 } from "lucide-react";
 import { Link } from "wouter";
+
+interface ValidationResult {
+  isValid: boolean;
+  userFound: boolean;
+  eligibilityChecks: {
+    ageEligible: boolean;
+    landAreaEligible: boolean;
+    generationEligible: boolean;
+  };
+  matchedRecord?: any;
+  errors: string[];
+  warnings: string[];
+}
 
 interface FraClaim {
   id: string;
@@ -45,6 +62,9 @@ interface FraClaim {
   updatedAt: string;
   aiScore?: number;
   aiFlags?: string[];
+  aadhaarId?: string;
+  age?: string;
+  validationResult?: ValidationResult;
 }
 
 export default function AdminDashboard() {
@@ -52,6 +72,9 @@ export default function AdminDashboard() {
   const [selectedClaim, setSelectedClaim] = useState<FraClaim | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const { toast } = useToast();
+  
+  // State for validation
+  const [validationResults, setValidationResults] = useState<Record<string, ValidationResult>>({});
 
   const { data: claimsData, isLoading } = useQuery({
     queryKey: ['/api/claims'],
@@ -159,6 +182,37 @@ export default function AdminDashboard() {
   const openClaimDetails = (claim: FraClaim) => {
     setSelectedClaim(claim);
     setDetailModalOpen(true);
+    
+    // Trigger validation if not already done
+    if (claim.aadhaarId || claim.beneficiaryName) {
+      validateClaim(claim);
+    }
+  };
+
+  const validateClaim = async (claim: FraClaim) => {
+    if (validationResults[claim.id]) return; // Already validated
+    
+    try {
+      const response = await apiRequest('POST', '/api/validate-claim', {
+        aadhaarId: claim.aadhaarId,
+        beneficiaryName: claim.beneficiaryName,
+        age: claim.age ? parseInt(claim.age) : undefined,
+        landArea: claim.landArea,
+        state: claim.state,
+        district: claim.district,
+        village: claim.village,
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        setValidationResults(prev => ({
+          ...prev,
+          [claim.id]: result.data
+        }));
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+    }
   };
 
   if (isLoading) {
@@ -334,40 +388,56 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {claims.slice(0, 10).map((claim) => (
-                      <div key={claim.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <p className="font-medium">{claim.claimId}</p>
-                              <p className="text-sm text-muted-foreground">{claim.beneficiaryName}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm">{claim.village}, {claim.district}</p>
-                              <p className="text-xs text-muted-foreground">{claim.claimType}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm">{claim.landArea}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(claim.createdAt).toLocaleDateString()}
-                              </p>
+                    {claims.slice(0, 10).map((claim) => {
+                      const validation = validationResults[claim.id];
+                      return (
+                        <div key={claim.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-4">
+                              <div>
+                                <p className="font-medium">{claim.claimId}</p>
+                                <p className="text-sm text-muted-foreground">{claim.beneficiaryName}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm">{claim.village}, {claim.district}</p>
+                                <p className="text-xs text-muted-foreground">{claim.claimType}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm">{claim.landArea}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(claim.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                              {validation && (
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-1">
+                                    {validation.isValid ? 
+                                      <Shield className="w-4 h-4 text-green-600" /> :
+                                      <Shield className="w-4 h-4 text-red-600" />
+                                    }
+                                    <span className="text-xs text-muted-foreground">
+                                      {validation.userFound ? "Verified" : "Not Found"}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
+                          <div className="flex items-center space-x-3">
+                            {getStatusBadge(claim.status)}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openClaimDetails(claim)}
+                              data-testid={`button-view-${claim.id}`}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-3">
-                          {getStatusBadge(claim.status)}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => openClaimDetails(claim)}
-                            data-testid={`button-view-${claim.id}`}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -600,6 +670,126 @@ export default function AdminDashboard() {
                             </div>
                           ))}
                         </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Validation Results */}
+                  {validationResults[selectedClaim.id] && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center space-x-2">
+                          <Database className="w-5 h-5" />
+                          <span>FRA Database Validation</span>
+                          <Badge variant={validationResults[selectedClaim.id].isValid ? "default" : "destructive"}>
+                            {validationResults[selectedClaim.id].userFound ? "User Found" : "User Not Found"}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Eligibility Status */}
+                        <div>
+                          <h4 className="font-medium mb-3">Eligibility Criteria Status</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className={`p-3 rounded-lg border ${validationResults[selectedClaim.id].eligibilityChecks.ageEligible ? 'bg-green-50 dark:bg-green-900/20 border-green-200' : 'bg-red-50 dark:bg-red-900/20 border-red-200'}`}>
+                              <div className="flex items-center space-x-2">
+                                {validationResults[selectedClaim.id].eligibilityChecks.ageEligible ? 
+                                  <Check className="w-4 h-4 text-green-600" /> : 
+                                  <X className="w-4 h-4 text-red-600" />
+                                }
+                                <span className="font-medium text-sm">Age Eligibility</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">Must be ≥ 18 years old</p>
+                            </div>
+                            <div className={`p-3 rounded-lg border ${validationResults[selectedClaim.id].eligibilityChecks.landAreaEligible ? 'bg-green-50 dark:bg-green-900/20 border-green-200' : 'bg-red-50 dark:bg-red-900/20 border-red-200'}`}>
+                              <div className="flex items-center space-x-2">
+                                {validationResults[selectedClaim.id].eligibilityChecks.landAreaEligible ? 
+                                  <Check className="w-4 h-4 text-green-600" /> : 
+                                  <X className="w-4 h-4 text-red-600" />
+                                }
+                                <span className="font-medium text-sm">Land Area</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">Must be ≤ 4 acres</p>
+                            </div>
+                            <div className={`p-3 rounded-lg border ${validationResults[selectedClaim.id].eligibilityChecks.generationEligible ? 'bg-green-50 dark:bg-green-900/20 border-green-200' : 'bg-red-50 dark:bg-red-900/20 border-red-200'}`}>
+                              <div className="flex items-center space-x-2">
+                                {validationResults[selectedClaim.id].eligibilityChecks.generationEligible ? 
+                                  <Check className="w-4 h-4 text-green-600" /> : 
+                                  <X className="w-4 h-4 text-red-600" />
+                                }
+                                <span className="font-medium text-sm">Generational Presence</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">Must be ≥ 75 years residence</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Validation Issues */}
+                        {validationResults[selectedClaim.id].errors.length > 0 && (
+                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4">
+                            <h4 className="font-medium text-red-700 dark:text-red-300 mb-2">Validation Errors:</h4>
+                            <ul className="list-disc list-inside text-sm text-red-600 dark:text-red-400">
+                              {validationResults[selectedClaim.id].errors.map((error, index) => (
+                                <li key={index}>{error}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Validation Warnings */}
+                        {validationResults[selectedClaim.id].warnings.length > 0 && (
+                          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg p-4">
+                            <h4 className="font-medium text-yellow-700 dark:text-yellow-300 mb-2">Validation Warnings:</h4>
+                            <ul className="list-disc list-inside text-sm text-yellow-600 dark:text-yellow-400">
+                              {validationResults[selectedClaim.id].warnings.map((warning, index) => (
+                                <li key={index}>{warning}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Matched Database Record */}
+                        {validationResults[selectedClaim.id].matchedRecord && (
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 rounded-lg p-4">
+                            <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-3">Matched Database Record:</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <span className="font-medium text-muted-foreground">Application ID:</span>
+                                <p className="text-blue-600">{validationResults[selectedClaim.id].matchedRecord.application_id}</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Age:</span>
+                                <p>{validationResults[selectedClaim.id].matchedRecord.age} years</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Land Area:</span>
+                                <p>{validationResults[selectedClaim.id].matchedRecord.land_area_requested_acres} acres</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Forest Years:</span>
+                                <p>{validationResults[selectedClaim.id].matchedRecord.years_in_forest_area} years</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Tribe:</span>
+                                <p>{validationResults[selectedClaim.id].matchedRecord.tribe}</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Previous Status:</span>
+                                <p>{validationResults[selectedClaim.id].matchedRecord.application_status}</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Eligibility Score:</span>
+                                <p>{Math.round(validationResults[selectedClaim.id].matchedRecord.eligibility_confidence_score * 100)}%</p>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Fraud Risk:</span>
+                                <p className={validationResults[selectedClaim.id].matchedRecord.fraud_risk_score > 0.5 ? 'text-red-600' : 'text-green-600'}>
+                                  {Math.round(validationResults[selectedClaim.id].matchedRecord.fraud_risk_score * 100)}%
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   )}
