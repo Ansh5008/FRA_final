@@ -356,11 +356,37 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="claims" className="space-y-6">
+              {/* Land Type Legend */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Land Type Color Guide</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {Object.entries({
+                      "Agricultural": "🌾",
+                      "Community Forest Resource": "🌳",
+                      "Habitation": "🏘️", 
+                      "Water Bodies": "💧",
+                      "Grazing": "🌿"
+                    }).map(([landType, icon]) => {
+                      const colors = getLandTypeColor(landType);
+                      return (
+                        <div key={landType} className={`flex items-center space-x-2 px-3 py-1 rounded-md ${colors.bg} ${colors.border}`}>
+                          <span className="text-sm">{icon}</span>
+                          <span className={`text-xs font-medium ${colors.text}`}>{landType}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+              
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Claims</CardTitle>
                   <CardDescription>
-                    Latest FRA claim submissions with real-time status updates
+                    Latest FRA claim submissions with real-time status updates and land type color coding
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
