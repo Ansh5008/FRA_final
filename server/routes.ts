@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactMessageSchema, insertFraClaimSchema } from "@shared/schema";
+import { fraValidationService, type ClaimValidationData } from "./validation";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -117,6 +118,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to update claim status"
+      });
+    }
+  });
+
+  // Validation endpoints
+  app.post("/api/validate-claim", async (req, res) => {
+    try {
+      const claimData: ClaimValidationData = {
+        aadhaarId: req.body.aadhaarId,
+        beneficiaryName: req.body.beneficiaryName,
+        age: req.body.age ? parseInt(req.body.age) : undefined,
+        landArea: req.body.landArea,
+        state: req.body.state,
+        district: req.body.district,
+        village: req.body.village,
+      };
+
+      const validationResult = await fraValidationService.validateClaim(claimData);
+      
+      res.json({
+        success: true,
+        data: validationResult
+      });
+    } catch (error) {
+      console.error('Validation error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to validate claim",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get similar records for a claim
+  app.post("/api/find-similar", async (req, res) => {
+    try {
+      const claimData: ClaimValidationData = {
+        aadhaarId: req.body.aadhaarId,
+        beneficiaryName: req.body.beneficiaryName,
+        age: req.body.age ? parseInt(req.body.age) : undefined,
+        landArea: req.body.landArea,
+        state: req.body.state,
+        district: req.body.district,
+        village: req.body.village,
+      };
+
+      const similarRecords = await fraValidationService.findSimilarRecords(claimData);
+      
+      res.json({
+        success: true,
+        data: similarRecords
+      });
+    } catch (error) {
+      console.error('Similar records error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to find similar records"
+      });
+    }
+  });
+
+  // Get dataset statistics
+  app.get("/api/dataset-stats", async (req, res) => {
+    try {
+      const stats = fraValidationService.getDatasetStats();
+      
+      res.json({
+        success: true,
+        data: stats
+      });
+    } catch (error) {
+      console.error('Dataset stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to get dataset statistics"
       });
     }
   });
