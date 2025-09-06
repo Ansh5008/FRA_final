@@ -32,6 +32,7 @@ import {
   Database
 } from "lucide-react";
 import { Link } from "wouter";
+import InteractiveMap from "@/components/interactive-map";
 
 interface ValidationResult {
   isValid: boolean;
@@ -347,33 +348,7 @@ export default function AdminDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-8 min-h-[400px] flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <MapPin className="w-16 h-16 text-primary mx-auto" />
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">Interactive GIS Map</h3>
-                        <p className="text-muted-foreground mb-4">Color-coded claim visualization</p>
-                        <div className="flex justify-center space-x-4 text-sm">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span>Approved</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                            <span>Pending</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                            <span>Rejected</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                            <span>Anomaly</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <InteractiveMap />
                 </CardContent>
               </Card>
             </TabsContent>
