@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { getLandTypeColor, getLandTypeIcon } from "@/lib/land-type-colors";
 import { 
   MapPin, 
   BarChart3, 
@@ -56,6 +57,7 @@ interface FraClaim {
   state: string;
   claimType: string;
   landArea: string;
+  landType?: string;
   documents: string[];
   coordinates?: string;
   status: string;
@@ -365,8 +367,11 @@ export default function AdminDashboard() {
                   <div className="space-y-4">
                     {claims.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10).map((claim) => {
                       const validation = validationResults[claim.id];
+                      const landTypeColor = getLandTypeColor(claim.landType);
+                      const landTypeIcon = getLandTypeIcon(claim.landType);
+                      
                       return (
-                        <div key={claim.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div key={claim.id} className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors ${landTypeColor.bg} ${landTypeColor.border}`}>
                           <div className="flex-1">
                             <div className="flex items-center space-x-4">
                               <div>
@@ -379,6 +384,14 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <p className="text-sm">{claim.landArea}</p>
+                                <div className="flex items-center space-x-1">
+                                  <span className="text-lg">{landTypeIcon}</span>
+                                  <span className={`text-xs font-medium ${landTypeColor.text}`}>
+                                    {claim.landType || "Agricultural"}
+                                  </span>
+                                </div>
+                              </div>
+                              <div>
                                 <p className="text-xs text-muted-foreground">
                                   {new Date(claim.createdAt).toLocaleDateString()}
                                 </p>
@@ -506,6 +519,15 @@ export default function AdminDashboard() {
                         <div>
                           <span className="font-medium">Land Area:</span>
                           <p>{selectedClaim.landArea}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Land Type:</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg">{getLandTypeIcon(selectedClaim.landType)}</span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getLandTypeColor(selectedClaim.landType).bg} ${getLandTypeColor(selectedClaim.landType).text}`}>
+                              {selectedClaim.landType || "Agricultural"}
+                            </span>
+                          </div>
                         </div>
                         <div>
                           <span className="font-medium">Submitted:</span>
