@@ -1,22 +1,7 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
-
-export const contactMessages = pgTable("contact_messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  organization: text("organization").notNull(),
-  message: text("message").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
 
 export const fraClaims = pgTable("fra_claims", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -25,25 +10,15 @@ export const fraClaims = pgTable("fra_claims", {
   village: text("village").notNull(),
   district: text("district").notNull(),
   state: text("state").notNull(),
-  claimType: text("claim_type").notNull(),
-  landArea: text("land_area").notNull(),
+  claimType: text("claim_type").notNull(), // "Individual Forest Right" | "Community Forest Right"
+  landArea: doublePrecision("land_area").notNull(), // changed to number
   documents: text("documents").array().notNull(),
-  status: text("status").notNull().default("pending"),
+  status: text("status").notNull().default("pending"), // "pending" | "approved" | "rejected"
   coordinates: text("coordinates"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
-  name: true,
-  email: true,
-  organization: true,
-  message: true,
+  aiScore: doublePrecision("ai_score"),
+  aiFlags: text("ai_flags").array(),
 });
 
 export const insertFraClaimSchema = createInsertSchema(fraClaims).pick({
@@ -55,11 +30,39 @@ export const insertFraClaimSchema = createInsertSchema(fraClaims).pick({
   landArea: true,
   documents: true,
   coordinates: true,
+  aiScore: true,
+  aiFlags: true,
 });
+
+// --- Add TypeScript interfaces for shared use ---
+
+export interface FraClaim {
+  id: string;
+  claimId: string;
+  beneficiaryName: string;
+  village: string;
+  district: string;
+  state: string;
+  claimType: "Individual Forest Right" | "Community Forest Right";
+  landArea: string; // changed from number to string
+  documents: string[];
+  coordinates?: string | null;
+  status: "pending" | "approved" | "rejected";
+  createdAt: Date;
+  updatedAt: Date;
+  aiScore?: number;
+  aiFlags?: string[];
+}
+
+export type InsertFraClaim = Omit<
+  FraClaim,
+  "id" | "claimId" | "status" | "createdAt" | "updatedAt"
+>;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
-export type InsertFraClaim = z.infer<typeof insertFraClaimSchema>;
-export type FraClaim = typeof fraClaims.$inferSelect;
+// Remove old InsertFraClaim and FraClaim exports if present
+// export type InsertFraClaim = z.infer<typeof insertFraClaimSchema>;
+// export type FraClaim = typeof fraClaims.$inferSelect;
