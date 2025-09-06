@@ -40,8 +40,8 @@ const InteractiveMap: React.FC = () => {
 
   useEffect(() => {
     if (mapRef.current && !mapInstanceRef.current) {
-      // Initialize map
-      mapInstanceRef.current = L.map(mapRef.current).setView([20.5937, 78.9629], 5); // Default to India
+      // Initialize map with India center and appropriate zoom
+      mapInstanceRef.current = L.map(mapRef.current).setView([20.5937, 78.9629], 5); // India center
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -69,12 +69,21 @@ const InteractiveMap: React.FC = () => {
       }
     }
 
-    // Use Nominatim API for geocoding
-    const encodedLocation = encodeURIComponent(locationQuery);
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedLocation}&limit=1`;
+    // Use Nominatim API for geocoding with India-specific search
+    const encodedLocation = encodeURIComponent(locationQuery + ', India');
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedLocation}&countrycodes=IN&limit=1&addressdetails=1`;
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'FRA-ACT-GIS-Map/1.0'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Geocoding API error: ${response.status}`);
+      }
+      
       const data: NominatimResult[] = await response.json();
       
       if (data.length > 0) {
@@ -86,24 +95,25 @@ const InteractiveMap: React.FC = () => {
       return null;
     } catch (error) {
       console.error('Geocoding error:', error);
-      return null;
+      throw error;
     }
   };
 
   const fetchBuildingData = async (lat: number, lon: number): Promise<OverpassElement[]> => {
-    // Create bounding box around the point (roughly 500m radius)
-    const offset = 0.005; // Approximately 500 meters
+    // Create bounding box around the point (roughly 1km radius for better coverage)
+    const offset = 0.01; // Approximately 1 kilometer
     const south = lat - offset;
     const west = lon - offset;
     const north = lat + offset;
     const east = lon + offset;
 
-    // Overpass API query for buildings
+    // Overpass API query for buildings and land use in India
     const query = `
-      [out:json][timeout:25];
+      [out:json][timeout:30];
       (
         way["building"](${south},${west},${north},${east});
         relation["building"](${south},${west},${north},${east});
+        way["landuse"~"residential|commercial|industrial"](${south},${west},${north},${east});
       );
       out geom;
     `;
@@ -113,15 +123,20 @@ const InteractiveMap: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'FRA-ACT-GIS-Map/1.0'
         },
         body: `data=${encodeURIComponent(query)}`
       });
+
+      if (!response.ok) {
+        throw new Error(`Overpass API error: ${response.status}`);
+      }
 
       const data: OverpassResponse = await response.json();
       return data.elements || [];
     } catch (error) {
       console.error('Overpass API error:', error);
-      return [];
+      throw error;
     }
   };
 
@@ -196,7 +211,7 @@ const InteractiveMap: React.FC = () => {
 
   const handleGenerateMap = async (): Promise<void> => {
     if (!location.trim()) {
-      setError('Please enter a location');
+      setError('Please enter an Indian location (district, state, or village)');
       return;
     }
 
@@ -207,14 +222,14 @@ const InteractiveMap: React.FC = () => {
       // Step 1: Geocode the location
       const coordinates = await geocodeLocation(location);
       if (!coordinates) {
-        setError('Location not found. Please try a different search term.');
+        setError('Location not found in India. Please try a different Indian district, state, or village.');
         return;
       }
 
       // Step 2: Fetch building data
       const buildings = await fetchBuildingData(coordinates.lat, coordinates.lon);
       if (buildings.length === 0) {
-        setError('No buildings found in this area. Try a different location or zoom level.');
+        setError('No cadastral data found for this location. Try a more urbanized area or different location.');
         return;
       }
 
@@ -226,15 +241,24 @@ const InteractiveMap: React.FC = () => {
       // Step 4: Plot buildings on map
       plotBuildings(buildings);
 
-      // Step 5: Fit map bounds to show all buildings
+      // Step 5: Fit map bounds to show all buildings or center on location
       if (buildingLayerGroupRef.current && mapInstanceRef.current) {
-        const group = new L.FeatureGroup(buildingLayerGroupRef.current.getLayers());
-        mapInstanceRef.current.fitBounds(group.getBounds().pad(0.1));
+        const layers = buildingLayerGroupRef.current.getLayers();
+        if (layers.length > 0) {
+          const group = new L.FeatureGroup(layers);
+          mapInstanceRef.current.fitBounds(group.getBounds().pad(0.1));
+        } else {
+          mapInstanceRef.current.setView([coordinates.lat, coordinates.lon], 15);
+        }
       }
 
     } catch (error) {
       console.error('Error generating map:', error);
-      setError('An error occurred while generating the map. Please try again.');
+      if (error instanceof Error) {
+        setError(`Failed to load map data: ${error.message}. Please try again.`);
+      } else {
+        setError('An error occurred while generating the map. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -251,7 +275,7 @@ const InteractiveMap: React.FC = () => {
       <div className="flex space-x-2">
         <Input
           type="text"
-          placeholder="Enter address, city, or coordinates (lat,lng)"
+          placeholder="Enter Indian district, state, village or coordinates (e.g. Bhopal, Ranchi, Gumla)"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           onKeyPress={handleKeyPress}
