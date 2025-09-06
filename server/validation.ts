@@ -125,7 +125,7 @@ class FRAValidationService {
           const record: FRADatasetRecord = {
             application_id: data.application_id,
             family_id: data.family_id,
-            aadhaar_id: data.aadhaar_id || '',
+            aadhaar_id: data.aadhaar_id || data.id_proofs || '',
             applicant_name: data.applicant_name,
             age: parseInt(data.age) || 0,
             gender: data.gender,
@@ -225,21 +225,29 @@ class FRAValidationService {
     // Find matching record in dataset
     let matchedRecord: FRADatasetRecord | undefined;
 
+    // Debug logging
+    console.log(`Validating claim for: ${claimData.beneficiaryName}, Aadhaar: ${claimData.aadhaarId}`);
+    console.log(`Dataset size: ${this.dataset.length}`);
+    
     // Try to match by Aadhaar ID first (most reliable)
     if (claimData.aadhaarId) {
+      console.log(`Searching by Aadhaar ID: ${claimData.aadhaarId}`);
       matchedRecord = this.dataset.find(record => 
         record.aadhaar_id && record.aadhaar_id === claimData.aadhaarId
       );
+      console.log(`Aadhaar match found: ${!!matchedRecord}`);
     }
 
     // If no Aadhaar match, try matching by name and location
     if (!matchedRecord) {
+      console.log(`Searching by name and location: ${claimData.beneficiaryName}, ${claimData.state}, ${claimData.district}, ${claimData.village}`);
       matchedRecord = this.dataset.find(record => 
         record.applicant_name.toLowerCase() === claimData.beneficiaryName.toLowerCase() &&
         record.state.toLowerCase() === claimData.state.toLowerCase() &&
         record.district.toLowerCase() === claimData.district.toLowerCase() &&
         record.village.toLowerCase() === claimData.village.toLowerCase()
       );
+      console.log(`Name/location match found: ${!!matchedRecord}`);
     }
 
     // Check if user found in database
